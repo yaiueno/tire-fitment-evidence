@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>タイヤ・ホイール適合エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=7" />
+  <link rel="stylesheet" href="style.css?v=8" />
 </head>
 <body>
   <header class="topbar">
@@ -41,18 +41,12 @@
           <input type="text" id="baseQuick" placeholder="例: 195/65R15 6.0J +45 (全角・ET・ハイフンOK)" />
           <button id="baseQuickBtn" class="btn" type="button">反映</button>
         </div>
-        <div class="fields-grid">
+        <div class="fields-grid fields-grid-5">
           <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="b_width" /></label>
           <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="b_aspect" /></label>
           <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="b_inch" /></label>
           <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="b_j" /></label>
           <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="b_et" /></label>
-          <label class="field"><span>規定圧(kPa)</span><input type="text" inputmode="decimal" id="b_kpa" /></label>
-          <label class="field"><span>純正LI</span><input type="text" inputmode="decimal" id="b_li" /></label>
-          <label class="field check-box">
-            <span>規格</span>
-            <label class="inline-check"><input type="checkbox" id="b_xl" /> XL</label>
-          </label>
         </div>
         <div class="margin-bar">
           <div class="margin-inputs">
@@ -95,18 +89,13 @@
           <input type="text" id="targetQuick" placeholder="例: 215/45ZR17 91W XL 17×7.5J ET45" />
           <button id="targetQuickBtn" class="btn" type="button">反映</button>
         </div>
-        <div class="fields-grid">
+        <div class="fields-grid fields-grid-6">
           <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="t_width" /></label>
           <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="t_aspect" /></label>
           <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="t_inch" /></label>
           <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="t_j" /></label>
           <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="t_et" /></label>
           <label class="field"><span>スペーサー</span><input type="text" inputmode="decimal" id="t_spacer" /></label>
-          <label class="field"><span>検討LI</span><input type="text" inputmode="decimal" id="t_li" /></label>
-          <label class="field check-box">
-            <span>規格</span>
-            <label class="inline-check"><input type="checkbox" id="t_xl" /> XL</label>
-          </label>
         </div>
       </div>
     </section>
@@ -141,7 +130,7 @@
 
         <div class="ev-card" id="evLoad">
           <div class="ev-head">
-            <span>2. ロードインデックス (耐荷重)・必要空気圧</span>
+            <span>2. ロードインデックス (自動算出)・必要空気圧</span>
             <span class="ev-pill" id="pillLoad">--</span>
           </div>
           <div class="ev-body" id="bodyLoad"></div>
@@ -181,6 +170,6 @@
   </main>
 
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=7"></script>
+  <script type="module" src="app.js?v=8"></script>
 </body>
 </html>

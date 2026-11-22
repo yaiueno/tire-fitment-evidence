@@ -354,6 +354,10 @@ input[type="text"]:focus {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.fields-grid-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 /* エビデンス領域 */
 .evidence-layout {
   display: grid;
@@ -631,5 +635,6 @@ input[type="text"]:focus {
 
 @media (max-width: 520px) {
   .fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .fields-grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fields-grid-5,
+  .fields-grid-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

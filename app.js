@@ -27,38 +27,50 @@ function buildShopUrls(keyword) {
   };
 }
 
-// 最大耐荷重テーブル (LI 69..112 -> kg @ 240kPa STD / 290kPa XL)
+// 最大耐荷重テーブル (LI 69..120 -> kg @ 240kPa STD / 290kPa XL)
 const LI_MAX_KG = {
   69: 325, 70: 335, 71: 345, 72: 355, 73: 365, 74: 375, 75: 387, 76: 400,
   77: 412, 78: 425, 79: 437, 80: 450, 81: 462, 82: 475, 83: 487, 84: 500,
   85: 515, 86: 530, 87: 545, 88: 560, 89: 580, 90: 600, 91: 615, 92: 630,
   93: 650, 94: 670, 95: 690, 96: 710, 97: 730, 98: 750, 99: 775, 100: 800,
   101: 825, 102: 850, 103: 875, 104: 900, 105: 925, 106: 950, 107: 975,
-  108: 1000, 109: 1030, 110: 1060, 111: 1090, 112: 1120
+  108: 1000, 109: 1030, 110: 1060, 111: 1090, 112: 1120, 113: 1150, 114: 1180,
+  115: 1215, 116: 1250, 117: 1285, 118: 1320, 119: 1360, 120: 1400
 };
 
-const COMMON_LI_MAP = {
-  '145/80R12': [74, false], '145/80R13': [75, false], '155/65R13': [73, false],
-  '155/65R14': [75, false], '155/70R13': [75, false], '165/55R14': [72, false],
-  '165/55R15': [75, false], '165/60R15': [77, false], '165/65R14': [79, false],
-  '165/70R14': [81, false], '175/65R14': [82, false], '175/65R15': [84, false],
-  '175/70R14': [84, false], '175/80R16': [91, false], '185/55R15': [82, false],
-  '185/55R16': [83, false], '185/60R15': [84, false], '185/65R15': [88, false],
-  '195/50R16': [84, false], '195/50R19': [88, true],  '195/55R16': [87, false],
-  '195/60R16': [89, false], '195/60R17': [90, false], '195/65R15': [91, false],
-  '195/80R15': [107, false], '205/45R17': [88, true], '205/50R17': [93, true],
-  '205/55R16': [91, false], '205/55R17': [91, false], '205/60R16': [92, false],
-  '205/65R16': [95, false], '215/45R17': [91, true],  '215/45R18': [93, true],
-  '215/50R17': [91, false], '215/50R18': [92, false], '215/55R17': [94, false],
-  '215/55R18': [95, false], '215/60R16': [95, false], '215/60R17': [96, false],
-  '215/65R16': [98, false], '215/65R17': [109, false], '225/40R18': [92, true],
-  '225/45R17': [94, true],  '225/45R18': [95, true],  '225/50R17': [98, true],
-  '225/55R17': [97, false], '225/55R18': [98, false], '225/55R19': [99, false],
-  '225/60R17': [99, false], '225/60R18': [100, false], '225/65R17': [102, false],
-  '225/65R18': [103, false], '235/40R18': [95, true], '235/45R18': [98, true],
-  '235/50R18': [97, false], '235/55R18': [100, false], '235/55R19': [101, false],
-  '245/40R18': [97, true],  '245/40R19': [98, true],  '265/65R17': [112, false],
-  '265/70R17': [112, false]
+// 国産主要サイズ JATMA STD / ETRTO XL 規格辞書 ([stdLi, xlLi])
+const STD_XL_LI_MAP = {
+  '145/80R12': [74, 78], '145/80R13': [75, 79], '155/65R13': [73, 77],
+  '155/65R14': [75, 79], '155/70R13': [75, 79], '155/80R13': [79, 83],
+  '155/80R14': [84, 88], '165/55R14': [72, 76], '165/55R15': [75, 79],
+  '165/60R15': [77, 81], '165/65R14': [79, 83], '165/65R15': [81, 85],
+  '165/70R14': [81, 85], '165/80R13': [83, 87], '175/60R15': [81, 85],
+  '175/60R16': [82, 86], '175/65R14': [82, 86], '175/65R15': [84, 88],
+  '175/70R14': [84, 88], '175/80R15': [90, 94], '175/80R16': [91, 95],
+  '185/55R15': [82, 86], '185/55R16': [83, 87], '185/60R15': [84, 88],
+  '185/60R16': [86, 90], '185/65R14': [86, 90], '185/65R15': [88, 92],
+  '185/70R14': [88, 92], '185/85R16': [98, 102], '195/45R16': [80, 84],
+  '195/45R17': [81, 85], '195/50R15': [82, 86], '195/50R16': [84, 88],
+  '195/50R19': [84, 88], '195/55R15': [85, 89], '195/55R16': [87, 91],
+  '195/60R15': [88, 92], '195/60R16': [89, 93], '195/60R17': [90, 94],
+  '195/65R15': [91, 95], '195/80R15': [96, 100], '205/40R17': [80, 84],
+  '205/45R17': [84, 88], '205/50R16': [87, 91], '205/50R17': [89, 93],
+  '205/55R16': [91, 95], '205/55R17': [91, 95], '205/60R16': [92, 96],
+  '205/65R15': [94, 98], '205/65R16': [95, 99], '215/40R17': [83, 87],
+  '215/40R18': [85, 89], '215/45R17': [87, 91], '215/45R18': [89, 93],
+  '215/50R17': [91, 95], '215/50R18': [92, 96], '215/55R17': [94, 98],
+  '215/55R18': [95, 99], '215/60R16': [95, 99], '215/60R17': [96, 100],
+  '215/65R16': [98, 102], '215/65R17': [99, 103], '225/40R18': [88, 92],
+  '225/40R19': [89, 93], '225/45R17': [91, 94], '225/45R18': [91, 95],
+  '225/45R19': [92, 96], '225/50R17': [94, 98], '225/50R18': [95, 99],
+  '225/55R17': [97, 101], '225/55R18': [98, 102], '225/55R19': [99, 103],
+  '225/60R17': [99, 103], '225/60R18': [100, 104], '225/65R17': [102, 106],
+  '225/65R18': [103, 107], '235/35R19': [87, 91], '235/40R18': [91, 95],
+  '235/45R18': [94, 98], '235/50R18': [97, 101], '235/55R18': [100, 104],
+  '235/55R19': [101, 105], '235/60R18': [103, 107], '245/35R19': [89, 93],
+  '245/40R18': [93, 97], '245/40R19': [94, 98], '245/45R18': [96, 100],
+  '245/45R19': [98, 102], '255/35R19': [92, 96], '265/65R17': [112, 116],
+  '265/70R17': [115, 119]
 };
 
 const POPULAR_BUDGET_SIZES = [
@@ -83,22 +95,48 @@ const POPULAR_BUDGET_SIZES = [
 ];
 
 const state = {
-  base: { width: 195, aspect: 65, inch: 15, j: 6.0, et: 45, kpa: 240, li: 91, xl: false, inMargin: 10, outMargin: 12 },
+  base: { width: 195, aspect: 65, inch: 15, j: 6.0, et: 45, inMargin: 10, outMargin: 12 },
   useMax: false,
   max: { width: 215, aspect: 45, inch: 17, j: 7.0, et: 50 },
-  target: { width: 205, aspect: 55, inch: 16, j: 6.5, et: 45, spacer: 0, li: 91, xl: false }
+  target: { width: 205, aspect: 55, inch: 16, j: 6.5, et: 45, spacer: 0 }
 };
 
-function estimateLI(width, aspect, inch) {
+function kgToNearestLi(kg) {
+  let bestLi = 69;
+  let bestDiff = Infinity;
+  for (const [liStr, maxKg] of Object.entries(LI_MAX_KG)) {
+    const diff = Math.abs(maxKg - kg);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestLi = Number(liStr);
+    }
+  }
+  return bestLi;
+}
+
+// ISO 4000-1 / ETRTO 物理空気室体積モデル＋主要規格辞書による STD / XL LI 自動算出
+function autoCalcLoadSpec(width, aspect, inch) {
   const key = `${width}/${aspect}R${inch}`;
-  if (COMMON_LI_MAP[key]) return { li: COMMON_LI_MAP[key][0], xl: COMMON_LI_MAP[key][1] };
-  const est = Math.round(52 + (width - 135) * 0.14 + (inch - 12) * 2.2 + (aspect - 40) * 0.12);
-  const li = Math.max(69, Math.min(112, est));
-  return { li, xl: aspect <= 45 };
+  let stdLi;
+  let xlLi;
+  if (STD_XL_LI_MAP[key]) {
+    [stdLi, xlLi] = STD_XL_LI_MAP[key];
+  } else {
+    const S = Number(width) || 195;
+    const H = S * ((Number(aspect) || 65) / 100);
+    const dr = (Number(inch) || 15) * INCH_MM;
+    // Calibrated ETRTO/ISO 4000-1 air-chamber capacity formula (kg at 240kPa STD)
+    const kgEst = 0.00204 * Math.pow(S, 1.50) * Math.pow(H / S, 0.70) * Math.pow(dr + H, 0.80);
+    stdLi = kgToNearestLi(kgEst);
+    xlLi = Math.min(120, stdLi + 4);
+  }
+  const stdMaxKg = LI_MAX_KG[stdLi] || 500;
+  const xlMaxKg = LI_MAX_KG[xlLi] || 560;
+  return { stdLi, xlLi, stdMaxKg, xlMaxKg, primaryIsXl: Number(aspect) <= 45 };
 }
 
 function calcLoadCapacityAtKpa(li, isXl, kpa) {
-  const maxKg = LI_MAX_KG[Math.max(69, Math.min(112, Math.round(li)))] || 500;
+  const maxKg = LI_MAX_KG[Math.max(69, Math.min(120, Math.round(li)))] || 500;
   const maxKpa = isXl ? 290 : 240;
   const effKpa = Math.min(kpa, maxKpa);
   const ratio = Math.pow(Math.max(0.3, (effKpa - 80) / (maxKpa - 80)), 0.55);
@@ -201,32 +239,48 @@ function evaluateEvidence() {
     }
   }
 
-  // 2. ロードインデックス (耐荷重) & 空気圧補正
-  const reqKg = calcLoadCapacityAtKpa(state.base.li, state.base.xl, state.base.kpa);
-  const tgtKgSameKpa = calcLoadCapacityAtKpa(state.target.li, state.target.xl, state.base.kpa);
-  const tgtMaxKpa = state.target.xl ? 290 : 240;
-  const tgtMaxKg = calcLoadCapacityAtKpa(state.target.li, state.target.xl, tgtMaxKpa);
+  // 2. ロードインデックス (STD / XL 完全自動算出) & 必要空気圧逆算
+  const baseLoad = autoCalcLoadSpec(bm.width, bm.aspect, bm.inch);
+  const tgtLoad = autoCalcLoadSpec(tm.width, tm.aspect, tm.inch);
+  // 基準タイヤの必要耐荷重（扁平45以下はXL 270kPa相当、通常はSTD 240kPa基準）
+  const reqKg = baseLoad.primaryIsXl
+    ? calcLoadCapacityAtKpa(baseLoad.xlLi, true, 270)
+    : baseLoad.stdMaxKg;
+
+  const tgtStdAt240 = tgtLoad.stdMaxKg;
+  const tgtXlAt290 = tgtLoad.xlMaxKg;
 
   let loadLevel = 'ok';
-  let loadText = '耐荷重OK';
-  let recommendedKpa = state.base.kpa;
+  let loadText = 'STD/XLともOK';
+  let recommendedKpa = 240;
 
-  if (tgtKgSameKpa >= reqKg) {
-    okList.push(`耐荷重: 規定圧 ${state.base.kpa}kPa 時点で ${tgtKgSameKpa}kg（必要 ${reqKg}kg）を確保しています。`);
-  } else if (tgtMaxKg >= reqKg) {
-    for (let p = state.base.kpa; p <= tgtMaxKpa; p += 5) {
-      if (calcLoadCapacityAtKpa(state.target.li, state.target.xl, p) >= reqKg) {
+  // STD 240kPa (通常基準) で reqKg をクリアするか
+  if (tgtStdAt240 >= reqKg) {
+    // 240kPa以下で済む必要kPaも参考計算（最低200〜240）
+    recommendedKpa = 240;
+    for (let p = 200; p <= 240; p += 10) {
+      if (calcLoadCapacityAtKpa(tgtLoad.stdLi, false, p) >= reqKg) {
+        recommendedKpa = p;
+        break;
+      }
+    }
+    okList.push(`耐荷重 (自動算出): 標準STD(LI ${tgtLoad.stdLi}=${tgtStdAt240}kg) / XL(LI ${tgtLoad.xlLi}=${tgtXlAt290}kg) ともに基準必要耐荷重 ${reqKg}kg (基準LI ${baseLoad.primaryIsXl ? `${baseLoad.xlLi}XL` : baseLoad.stdLi}) を確保しています。`);
+  } else if (tgtXlAt290 >= reqKg) {
+    // XL規格なら何kPaでreqKgを超えるか逆算
+    recommendedKpa = 290;
+    for (let p = 240; p <= 290; p += 5) {
+      if (calcLoadCapacityAtKpa(tgtLoad.xlLi, true, p) >= reqKg) {
         recommendedKpa = p;
         break;
       }
     }
     loadLevel = 'warn';
-    loadText = `${recommendedKpa}kPa昇圧でOK`;
-    warnList.push(`【耐荷重 条件付きOK】現在と同圧(${state.base.kpa}kPa)では耐荷重が ${reqKg - tgtKgSameKpa}kg 不足しますが、空気圧を「${recommendedKpa}kPa」へ設定すれば必要耐荷重 ${reqKg}kg を確保できます。`);
+    loadText = `XL ${recommendedKpa}kPa必要`;
+    warnList.push(`【耐荷重 XL指定・昇圧でOK】標準STD(LI ${tgtLoad.stdLi}=${tgtStdAt240}kg)では基準必要値 ${reqKg}kg に ${reqKg - tgtStdAt240}kg 不足しますが、XL規格(LI ${tgtLoad.xlLi})のタイヤを選び空気圧を「${recommendedKpa}kPa」へ設定すれば必要耐荷重を確保できます。`);
   } else {
     loadLevel = 'ng';
-    loadText = `${reqKg - tgtMaxKg}kg不足`;
-    ngList.push(`【耐荷重 NG】最大空気圧(${tgtMaxKpa}kPa)まで入れても耐荷重 ${tgtMaxKg}kg で、必要値 ${reqKg}kg に ${reqKg - tgtMaxKg}kg 不足しています。車重を支えきれずバースト・偏摩耗・車検不合格の危険があるため不可です。`);
+    loadText = `XL最大圧でも${reqKg - tgtXlAt290}kg不足`;
+    ngList.push(`【耐荷重 NG】エアボリューム不足のため、XL規格(LI ${tgtLoad.xlLi})の最大空気圧290kPaでも耐荷重 ${tgtXlAt290}kg となり、基準必要値 ${reqKg}kg に ${reqKg - tgtXlAt290}kg 不足します。バースト・偏摩耗・車検不合格の危険があるため不可です。`);
   }
 
   // 3. タイヤ幅 × リム幅 (JATMA適用リム幅レンジ)
@@ -306,7 +360,7 @@ function evaluateEvidence() {
   return {
     tm, bm, mx, overall, ngList, warnList, okList,
     diaDiff, diaPct, actualSpeedAt40, groundClearanceDiff, diaLevel, diaText,
-    reqKg, tgtKgSameKpa, tgtMaxKpa, tgtMaxKg, recommendedKpa, loadLevel, loadText,
+    baseLoad, tgtLoad, reqKg, tgtStdAt240, tgtXlAt290, recommendedKpa, loadLevel, loadText,
     rimRange, rimLevel, rimText,
     rimRadDiff, innerRimDiff, innerTireDiff, outerRimDiff, outerTireDiff,
     inMargin, outMargin, inShift, inRemain, outShift, outRemain, clearLevel, clearText
@@ -381,12 +435,12 @@ function renderEvidence() {
     </div>
   `;
 
-  // 2. 耐荷重
+  // 2. 耐荷重 (自動算出 STD / XL)
   setCard('evLoad', 'pillLoad', ev.loadLevel, ev.loadText);
   document.getElementById('bodyLoad').innerHTML =
-    `現在必要耐荷重 (${state.base.kpa}kPa時): <strong>${ev.reqKg}kg/本</strong> (LI ${state.base.li}${state.base.xl ? ' XL' : ''})<br>` +
-    `検討タイヤ (LI ${state.target.li}${state.target.xl ? ' XL' : ''}): 同圧時 <strong>${ev.tgtKgSameKpa}kg</strong> / 最大圧(${ev.tgtMaxKpa}kPa)時 <strong>${ev.tgtMaxKg}kg</strong>` +
-    (ev.loadLevel === 'warn' ? `<br>→ <strong>${ev.recommendedKpa}kPa 充填で必要耐荷重をクリア</strong>` : '');
+    `基準必要耐荷重: <strong>${ev.reqKg}kg/本</strong> (自動算出 STD LI <strong>${ev.baseLoad.stdLi}</strong> / XL LI <strong>${ev.baseLoad.xlLi}</strong>)<br>` +
+    `検討タイヤ (自動算出): STD LI <strong>${ev.tgtLoad.stdLi}</strong>(最大240kPa時 <strong>${ev.tgtStdAt240}kg</strong>) / XL LI <strong>${ev.tgtLoad.xlLi}</strong>(最大290kPa時 <strong>${ev.tgtXlAt290}kg</strong>)` +
+    (ev.loadLevel === 'warn' ? `<br>→ <strong>XL規格タイヤ選択＋${ev.recommendedKpa}kPa充填で必要耐荷重をクリア</strong>` : '');
 
   // 3. リム幅
   setCard('evRim', 'pillRim', ev.rimLevel, ev.rimText);
@@ -438,9 +492,6 @@ function renderAlternatives(bm, tm) {
       state.target.width = c.width;
       state.target.aspect = c.aspect;
       state.target.inch = c.inch;
-      const est = estimateLI(c.width, c.aspect, c.inch);
-      state.target.li = est.li;
-      state.target.xl = est.xl;
       syncInputs();
     });
   });
@@ -639,11 +690,8 @@ function syncInputs() {
   setVal('b_inch', state.base.inch);
   setVal('b_j', state.base.j);
   setVal('b_et', state.base.et);
-  setVal('b_kpa', state.base.kpa);
-  setVal('b_li', state.base.li);
   setVal('b_in_margin', state.base.inMargin);
   setVal('b_out_margin', state.base.outMargin);
-  document.getElementById('b_xl').checked = state.base.xl;
 
   document.getElementById('useMaxToggle').checked = state.useMax;
   document.getElementById('maxBox').hidden = !state.useMax;
@@ -659,13 +707,11 @@ function syncInputs() {
   setVal('t_j', state.target.j);
   setVal('t_et', state.target.et);
   setVal('t_spacer', state.target.spacer);
-  setVal('t_li', state.target.li);
-  document.getElementById('t_xl').checked = state.target.xl;
 
   renderEvidence();
 }
 
-const bindNum = (id, groupObj, key, autoEstLi = false) => {
+const bindNum = (id, groupObj, key) => {
   const el = document.getElementById(id);
   el.addEventListener('input', (e) => {
     const raw = e.target.value.trim();
@@ -673,23 +719,16 @@ const bindNum = (id, groupObj, key, autoEstLi = false) => {
     const v = parseFloat(raw);
     if (isNaN(v)) return;
     groupObj[key] = v;
-    if (autoEstLi && (key === 'width' || key === 'aspect' || key === 'inch')) {
-      const est = estimateLI(groupObj.width, groupObj.aspect, groupObj.inch);
-      groupObj.li = est.li;
-      groupObj.xl = est.xl;
-    }
     syncInputs();
   });
   el.addEventListener('blur', () => syncInputs());
 };
 
-bindNum('b_width', state.base, 'width', true);
-bindNum('b_aspect', state.base, 'aspect', true);
-bindNum('b_inch', state.base, 'inch', true);
+bindNum('b_width', state.base, 'width');
+bindNum('b_aspect', state.base, 'aspect');
+bindNum('b_inch', state.base, 'inch');
 bindNum('b_j', state.base, 'j');
 bindNum('b_et', state.base, 'et');
-bindNum('b_kpa', state.base, 'kpa');
-bindNum('b_li', state.base, 'li');
 bindNum('b_in_margin', state.base, 'inMargin');
 bindNum('b_out_margin', state.base, 'outMargin');
 
@@ -712,19 +751,15 @@ document.querySelectorAll('.margin-preset-btn').forEach(btn => {
   });
 });
 
-bindNum('t_width', state.target, 'width', true);
-bindNum('t_aspect', state.target, 'aspect', true);
-bindNum('t_inch', state.target, 'inch', true);
+bindNum('t_width', state.target, 'width');
+bindNum('t_aspect', state.target, 'aspect');
+bindNum('t_inch', state.target, 'inch');
 bindNum('t_j', state.target, 'j');
 bindNum('t_et', state.target, 'et');
 bindNum('t_spacer', state.target, 'spacer');
-bindNum('t_li', state.target, 'li');
-
-document.getElementById('b_xl').addEventListener('change', (e) => { state.base.xl = e.target.checked; renderEvidence(); });
-document.getElementById('t_xl').addEventListener('change', (e) => { state.target.xl = e.target.checked; renderEvidence(); });
 
 // 極限対応表記揺れパーサー (全角/記号違い/順序違い/ET/80省略/XL/LI)
-function parseSpecText(rawStr, targetObj, autoEstLi = false) {
+function parseSpecText(rawStr, targetObj) {
   let s = String(rawStr || '')
     .normalize('NFKC')
     .toUpperCase()
@@ -761,24 +796,10 @@ function parseSpecText(rawStr, targetObj, autoEstLi = false) {
     }
   }
 
-  let explicitXl = null;
-  if (/\b(?:XL|EXTRA\s*LOAD|RFD|REINFORCED)\b|エクストラロード/.test(s)) {
-    explicitXl = true;
-    s = s.replace(/\b(?:XL|EXTRA\s*LOAD|RFD|REINFORCED)\b|エクストラロード/g, ' ');
-  }
-
-  let explicitLi = null;
-  const liLabel = s.match(/(?:LI|ロードインデックス)\s*[:=]?\s*(69|[789]\d|1[01]\d)(?=$|[^\d])/);
-  if (liLabel) {
-    explicitLi = Number(liLabel[1]);
-    s = s.replace(liLabel[0], ' ');
-  } else {
-    const liSvc = s.match(/\(?\b(69|[789]\d|1[01]\d)(?:\/\d{2,3})?\s*[HVWYZQRSTULMNPK]\b\)?/);
-    if (liSvc) {
-      explicitLi = Number(liSvc[1]);
-      s = s.replace(liSvc[0], ' ');
-    }
-  }
+  // XL / LI strings are consumed only to prevent offset misdetection
+  s = s.replace(/\b(?:XL|EXTRA\s*LOAD|RFD|REINFORCED)\b|エクストラロード/g, ' ');
+  s = s.replace(/(?:LI|ロードインデックス)\s*[:=]?\s*(69|[789]\d|1[01]\d)(?=$|[^\d])/g, ' ');
+  s = s.replace(/\(?\b(69|[789]\d|1[01]\d)(?:\/\d{2,3})?\s*[HVWYZQRSTULMNPK]\b\)?/g, ' ');
 
   // Wheel Inch x J or J x Inch
   const setA = s.match(/(?:^|[^\d.])(1\d|2[0-4])\s*(?:インチ|INCH|IN|")?\s*X\s*(\d{1,2}(?:\.\d+)?)\s*(?:JJ?|B)?(?=$|[^\d])/);
@@ -840,37 +861,28 @@ function parseSpecText(rawStr, targetObj, autoEstLi = false) {
       }
     }
   }
-
-  if (autoEstLi && sizeParsed) {
-    const est = estimateLI(targetObj.width, targetObj.aspect, targetObj.inch);
-    if ('li' in targetObj) targetObj.li = explicitLi !== null ? explicitLi : est.li;
-    if ('xl' in targetObj) targetObj.xl = explicitXl !== null ? explicitXl : est.xl;
-  } else {
-    if (explicitLi !== null && 'li' in targetObj) targetObj.li = explicitLi;
-    if (explicitXl !== null && 'xl' in targetObj) targetObj.xl = explicitXl;
-  }
 }
 
-function bindQuickParse(inputId, btnId, obj, autoEstLi = true) {
+function bindQuickParse(inputId, btnId, obj) {
   const apply = () => {
     const str = document.getElementById(inputId).value.trim();
     if (!str) return;
-    parseSpecText(str, obj, autoEstLi);
+    parseSpecText(str, obj);
     syncInputs();
   };
   document.getElementById(btnId).addEventListener('click', apply);
   document.getElementById(inputId).addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(); });
 }
 
-bindQuickParse('baseQuick', 'baseQuickBtn', state.base, true);
-bindQuickParse('maxQuick', 'maxQuickBtn', state.max, false);
-bindQuickParse('targetQuick', 'targetQuickBtn', state.target, true);
+bindQuickParse('baseQuick', 'baseQuickBtn', state.base);
+bindQuickParse('maxQuick', 'maxQuickBtn', state.max);
+bindQuickParse('targetQuick', 'targetQuickBtn', state.target);
 
 document.getElementById('shareUrlBtn').addEventListener('click', async () => {
   const url = new URL(window.location.href);
   const b = state.base, t = state.target, mx = state.max;
-  url.searchParams.set('b', `${b.width},${b.aspect},${b.inch},${b.j},${b.et},${b.kpa},${b.li},${b.xl ? 1 : 0},${b.inMargin},${b.outMargin}`);
-  url.searchParams.set('t', `${t.width},${t.aspect},${t.inch},${t.j},${t.et},${t.spacer},${t.li},${t.xl ? 1 : 0}`);
+  url.searchParams.set('b', `${b.width},${b.aspect},${b.inch},${b.j},${b.et},${b.inMargin},${b.outMargin}`);
+  url.searchParams.set('t', `${t.width},${t.aspect},${t.inch},${t.j},${t.et},${t.spacer}`);
   url.searchParams.set('um', state.useMax ? '1' : '0');
   url.searchParams.set('mx', `${mx.width},${mx.aspect},${mx.inch},${mx.j},${mx.et}`);
   try {
@@ -887,13 +899,14 @@ function loadFromUrl() {
   const p = new URLSearchParams(window.location.search);
   if (p.has('b')) {
     const a = p.get('b').split(',');
-    if (a.length >= 7) Object.assign(state.base, {
-      width: Number(a[0]), aspect: Number(a[1]), inch: Number(a[2]),
-      j: Number(a[3]), et: Number(a[4]), kpa: Number(a[5]),
-      li: Number(a[6]), xl: a[7] === '1',
-      inMargin: a[8] !== undefined ? Number(a[8]) : 10,
-      outMargin: a[9] !== undefined ? Number(a[9]) : 12
-    });
+    if (a.length >= 5) {
+      Object.assign(state.base, {
+        width: Number(a[0]), aspect: Number(a[1]), inch: Number(a[2]),
+        j: Number(a[3]), et: Number(a[4]),
+        inMargin: a.length === 7 ? Number(a[5]) : (a[8] !== undefined ? Number(a[8]) : 10),
+        outMargin: a.length === 7 ? Number(a[6]) : (a[9] !== undefined ? Number(a[9]) : 12)
+      });
+    }
   }
   if (p.has('um')) state.useMax = p.get('um') === '1';
   if (p.has('mx')) {
@@ -905,10 +918,9 @@ function loadFromUrl() {
   }
   if (p.has('t')) {
     const a = p.get('t').split(',');
-    if (a.length >= 7) Object.assign(state.target, {
+    if (a.length >= 6) Object.assign(state.target, {
       width: Number(a[0]), aspect: Number(a[1]), inch: Number(a[2]),
-      j: Number(a[3]), et: Number(a[4]), spacer: Number(a[5]),
-      li: Number(a[6]), xl: a[7] === '1'
+      j: Number(a[3]), et: Number(a[4]), spacer: Number(a[5])
     });
   }
 }
@@ -983,9 +995,9 @@ function exportEvidenceSheetPng() {
 
   sc.fillStyle = '#1e293b';
   sc.font = 'bold 15px sans-serif';
-  sc.fillText(`① 最小基準: ${bm.width}/${bm.aspect}R${bm.inch} (${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}) [圧:${state.base.kpa}kPa / LI:${state.base.li}${state.base.xl ? ' XL' : ''} / 余裕 内${ev.inMargin}・外${ev.outMargin}mm]` + (ev.mx ? `  |  最大枠: ${ev.mx.width}/${ev.mx.aspect}R${ev.mx.inch} (${ev.mx.j.toFixed(1)}J +${ev.mx.et})` : ''), 40, 136);
+  sc.fillText(`① 最小基準: ${bm.width}/${bm.aspect}R${bm.inch} (${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}) [自動LI STD:${ev.baseLoad.stdLi}/XL:${ev.baseLoad.xlLi} / 余裕 内${ev.inMargin}・外${ev.outMargin}mm]` + (ev.mx ? `  |  最大枠: ${ev.mx.width}/${ev.mx.aspect}R${ev.mx.inch} (${ev.mx.j.toFixed(1)}J +${ev.mx.et})` : ''), 40, 136);
   sc.fillStyle = '#1d4ed8';
-  sc.fillText(`② 検討中  : ${tm.width}/${tm.aspect}R${tm.inch} (${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}) [LI:${state.target.li}${state.target.xl ? ' XL' : ''}]`, 40, 159);
+  sc.fillText(`② 検討中  : ${tm.width}/${tm.aspect}R${tm.inch} (${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}) [自動LI STD:${ev.tgtLoad.stdLi}/XL:${ev.tgtLoad.xlLi}]`, 40, 159);
 
   sc.strokeStyle = '#cbd5e1';
   sc.strokeRect(24, 186, 560, 420);
@@ -1014,7 +1026,7 @@ function exportEvidenceSheetPng() {
     {
       title: `2. 耐荷重・空気圧 (${ev.loadText})`,
       level: ev.loadLevel,
-      text: `必要耐荷重 ${ev.reqKg}kg/本 (${state.base.kpa}kPa) → 検討 同圧 ${ev.tgtKgSameKpa}kg / 最大 ${ev.tgtMaxKg}kg (${ev.tgtMaxKpa}kPa)` + (ev.loadLevel === 'warn' ? ` → ${ev.recommendedKpa}kPa昇圧でOK` : '')
+      text: `必要耐荷重 ${ev.reqKg}kg/本 → 検討 STD LI${ev.tgtLoad.stdLi}(${ev.tgtStdAt240}kg) / XL LI${ev.tgtLoad.xlLi}(最大${ev.tgtXlAt290}kg)` + (ev.loadLevel === 'warn' ? ` → XL+${ev.recommendedKpa}kPa昇圧でOK` : '')
     },
     {
       title: `3. リム幅 JATMA (${ev.rimText})`,
