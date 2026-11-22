@@ -280,6 +280,42 @@ input[type="text"]:focus {
   cursor: pointer;
 }
 
+.margin-bar {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.margin-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.margin-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.margin-preset-btn {
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.margin-preset-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
 /* エビデンス領域 */
 .evidence-layout {
   display: grid;
@@ -331,6 +367,8 @@ input[type="text"]:focus {
 }
 .sw-base { background: #64748b; }
 .sw-target { background: var(--blue); }
+.sw-in-lim { background: #ea580c; }
+.sw-out-lim { background: #0284c7; }
 
 .canvas-wrap {
   width: 100%;

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>タイヤ・ホイール適合エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <header class="topbar">
@@ -54,6 +54,17 @@
             <label class="inline-check"><input type="checkbox" id="b_xl" /> XL</label>
           </label>
         </div>
+        <div class="margin-bar">
+          <div class="margin-inputs">
+            <label class="field"><span>イン側余裕 (サス/内 mm)</span><input type="text" inputmode="decimal" id="b_in_margin" /></label>
+            <label class="field"><span>アウト側余裕 (フェンダー mm)</span><input type="text" inputmode="decimal" id="b_out_margin" /></label>
+          </div>
+          <div class="margin-presets">
+            <button type="button" class="margin-preset-btn" data-in="6" data-out="6">軽目安 (内6/外6mm)</button>
+            <button type="button" class="margin-preset-btn" data-in="10" data-out="12">普通車目安 (内10/外12mm)</button>
+            <button type="button" class="margin-preset-btn" data-in="15" data-out="15">指1本確認 (内15/外15mm)</button>
+          </div>
+        </div>
       </div>
 
       <div class="input-card card-target">
@@ -89,6 +100,8 @@
           <div class="legend-mini">
             <span class="lg-item"><i class="sw sw-base"></i>現在のサイズ</span>
             <span class="lg-item"><i class="sw sw-target"></i>検討サイズ</span>
+            <span class="lg-item"><i class="sw sw-in-lim"></i>イン限界</span>
+            <span class="lg-item"><i class="sw sw-out-lim"></i>アウト限界</span>
           </div>
         </div>
         <div class="canvas-wrap">
@@ -148,6 +161,6 @@
   </main>
 
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=5"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>
