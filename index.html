@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>タイヤ・ホイール適合エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
   <header class="topbar">
@@ -34,11 +34,11 @@
     <section class="input-grid">
       <div class="input-card card-base">
         <div class="card-header">
-          <span class="card-tag tag-base">① 現在のサイズ（純正・基準）</span>
+          <span class="card-tag tag-base">① 現在のサイズ（純正・最小基準）</span>
           <span class="card-spec" id="baseSummary">--</span>
         </div>
         <div class="quick-row">
-          <input type="text" id="baseQuick" placeholder="例: 195/65R15 6.0J +45" />
+          <input type="text" id="baseQuick" placeholder="例: 195/65R15 6.0J +45 (全角・ET・ハイフンOK)" />
           <button id="baseQuickBtn" class="btn" type="button">反映</button>
         </div>
         <div class="fields-grid">
@@ -65,6 +65,25 @@
             <button type="button" class="margin-preset-btn" data-in="15" data-out="15">指1本確認 (内15/外15mm)</button>
           </div>
         </div>
+        <div class="max-opt-wrap">
+          <label class="max-opt-toggle">
+            <input type="checkbox" id="useMaxToggle" />
+            <span>＋ 最大マッチング（上位グレード）枠を追加して挟み撃ち比較</span>
+          </label>
+          <div id="maxBox" class="max-opt-box" hidden>
+            <div class="quick-row">
+              <input type="text" id="maxQuick" placeholder="例: 215/45R17 7.0J +50" />
+              <button id="maxQuickBtn" class="btn" type="button">反映</button>
+            </div>
+            <div class="fields-grid fields-grid-5">
+              <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="mx_width" /></label>
+              <label class="field"><span>扁平(%)</span><input type="text" inputmode="decimal" id="mx_aspect" /></label>
+              <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="mx_inch" /></label>
+              <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="mx_j" /></label>
+              <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="mx_et" /></label>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="input-card card-target">
@@ -73,7 +92,7 @@
           <span class="card-spec" id="targetSummary">--</span>
         </div>
         <div class="quick-row">
-          <input type="text" id="targetQuick" placeholder="例: 185/60R15 5.5J +42" />
+          <input type="text" id="targetQuick" placeholder="例: 215/45ZR17 91W XL 17×7.5J ET45" />
           <button id="targetQuickBtn" class="btn" type="button">反映</button>
         </div>
         <div class="fields-grid">
@@ -98,7 +117,8 @@
         <div class="panel-head">
           <h2>2D断面比較（上半分拡大・寸法表示）</h2>
           <div class="legend-mini">
-            <span class="lg-item"><i class="sw sw-base"></i>現在のサイズ</span>
+            <span class="lg-item"><i class="sw sw-base"></i>最小基準</span>
+            <span class="lg-item" id="legendMaxItem" hidden><i class="sw sw-max"></i>最大基準</span>
             <span class="lg-item"><i class="sw sw-target"></i>検討サイズ</span>
             <span class="lg-item"><i class="sw sw-in-lim"></i>イン限界</span>
             <span class="lg-item"><i class="sw sw-out-lim"></i>アウト限界</span>
@@ -161,6 +181,6 @@
   </main>
 
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=6"></script>
+  <script type="module" src="app.js?v=7"></script>
 </body>
 </html>
