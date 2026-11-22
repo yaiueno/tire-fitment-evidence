@@ -124,6 +124,39 @@ input[type="text"]:focus {
   gap: 12px;
 }
 
+/* 比較モード切替バー */
+.mode-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px;
+}
+
+.mode-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mode-btn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+.mode-btn.active {
+  background: var(--blue);
+  color: #ffffff;
+}
+
 /* 総合判定バナー */
 .verdict-banner {
   background: var(--surface);
@@ -356,6 +389,33 @@ input[type="text"]:focus {
 
 .fields-grid-6 {
   grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+body[data-mode="tire"] .field-wheel {
+  display: none !important;
+}
+
+body[data-mode="tire"] .fields-grid-5,
+body[data-mode="tire"] .fields-grid-6 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-mode="wheel"] .field-tire {
+  display: none !important;
+}
+
+body[data-mode="wheel"] .fields-grid-5 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-mode="wheel"] .fields-grid-6 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ev-card[hidden],
+.margin-bar[hidden],
+.meter-bar-box[hidden] {
+  display: none !important;
 }
 
 /* エビデンス領域 */
@@ -634,7 +694,9 @@ input[type="text"]:focus {
 }
 
 @media (max-width: 520px) {
+  .mode-btn { padding: 6px 4px; font-size: 11px; }
   .fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fields-grid-5,
   .fields-grid-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body[data-mode="wheel"] .fields-grid-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

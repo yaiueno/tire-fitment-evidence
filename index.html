@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>タイヤ・ホイール適合エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
   <header class="topbar">
@@ -15,11 +15,16 @@
     <div class="topbar-actions">
       <button id="saveSheetBtn" class="btn btn-primary" type="button">診断画像(PNG)保存</button>
       <button id="shareUrlBtn" class="btn" type="button">URLコピー</button>
-      <a href="https://yaiueno.github.io/wheel-fitment-3d/" class="btn btn-outline" target="_blank" rel="noopener">3D・STL出力版へ</a>
     </div>
   </header>
 
   <main class="container">
+    <section class="mode-bar" aria-label="比較モード切替">
+      <button type="button" class="mode-btn active" data-mode="both">タイヤ＋ホイール比較</button>
+      <button type="button" class="mode-btn" data-mode="tire">タイヤのみ比較</button>
+      <button type="button" class="mode-btn" data-mode="wheel">ホイールのみ比較</button>
+    </section>
+
     <!-- 総合判定バナー & 接客トーク -->
     <section id="verdictBanner" class="verdict-banner status-ok">
       <div class="verdict-head">
@@ -42,13 +47,13 @@
           <button id="baseQuickBtn" class="btn" type="button">反映</button>
         </div>
         <div class="fields-grid fields-grid-5">
-          <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="b_width" /></label>
-          <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="b_aspect" /></label>
+          <label class="field field-tire"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="b_width" /></label>
+          <label class="field field-tire"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="b_aspect" /></label>
           <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="b_inch" /></label>
-          <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="b_j" /></label>
-          <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="b_et" /></label>
+          <label class="field field-wheel"><span>J数</span><input type="text" inputmode="decimal" id="b_j" /></label>
+          <label class="field field-wheel"><span>インセット</span><input type="text" inputmode="decimal" id="b_et" /></label>
         </div>
-        <div class="margin-bar">
+        <div class="margin-bar" id="marginBar">
           <div class="margin-inputs">
             <label class="field"><span>イン側余裕 (サス/内 mm)</span><input type="text" inputmode="decimal" id="b_in_margin" /></label>
             <label class="field"><span>アウト側余裕 (フェンダー mm)</span><input type="text" inputmode="decimal" id="b_out_margin" /></label>
@@ -70,11 +75,11 @@
               <button id="maxQuickBtn" class="btn" type="button">反映</button>
             </div>
             <div class="fields-grid fields-grid-5">
-              <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="mx_width" /></label>
-              <label class="field"><span>扁平(%)</span><input type="text" inputmode="decimal" id="mx_aspect" /></label>
+              <label class="field field-tire"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="mx_width" /></label>
+              <label class="field field-tire"><span>扁平(%)</span><input type="text" inputmode="decimal" id="mx_aspect" /></label>
               <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="mx_inch" /></label>
-              <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="mx_j" /></label>
-              <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="mx_et" /></label>
+              <label class="field field-wheel"><span>J数</span><input type="text" inputmode="decimal" id="mx_j" /></label>
+              <label class="field field-wheel"><span>インセット</span><input type="text" inputmode="decimal" id="mx_et" /></label>
             </div>
           </div>
         </div>
@@ -90,12 +95,12 @@
           <button id="targetQuickBtn" class="btn" type="button">反映</button>
         </div>
         <div class="fields-grid fields-grid-6">
-          <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="t_width" /></label>
-          <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="t_aspect" /></label>
+          <label class="field field-tire"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="t_width" /></label>
+          <label class="field field-tire"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="t_aspect" /></label>
           <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="t_inch" /></label>
-          <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="t_j" /></label>
-          <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="t_et" /></label>
-          <label class="field"><span>スペーサー</span><input type="text" inputmode="decimal" id="t_spacer" /></label>
+          <label class="field field-wheel"><span>J数</span><input type="text" inputmode="decimal" id="t_j" /></label>
+          <label class="field field-wheel"><span>インセット</span><input type="text" inputmode="decimal" id="t_et" /></label>
+          <label class="field field-wheel"><span>スペーサー</span><input type="text" inputmode="decimal" id="t_spacer" /></label>
         </div>
       </div>
     </section>
@@ -109,8 +114,8 @@
             <span class="lg-item"><i class="sw sw-base"></i>最小基準</span>
             <span class="lg-item" id="legendMaxItem" hidden><i class="sw sw-max"></i>最大基準</span>
             <span class="lg-item"><i class="sw sw-target"></i>検討サイズ</span>
-            <span class="lg-item"><i class="sw sw-in-lim"></i>イン限界</span>
-            <span class="lg-item"><i class="sw sw-out-lim"></i>アウト限界</span>
+            <span class="lg-item" id="legendInLim"><i class="sw sw-in-lim"></i>イン限界</span>
+            <span class="lg-item" id="legendOutLim"><i class="sw sw-out-lim"></i>アウト限界</span>
           </div>
         </div>
         <div class="canvas-wrap">
@@ -138,7 +143,7 @@
 
         <div class="ev-card" id="evRim">
           <div class="ev-head">
-            <span>3. タイヤ幅 × リム幅 (JATMA適用レンジ)</span>
+            <span id="headRim">3. タイヤ幅 × リム幅 (JATMA適用レンジ)</span>
             <span class="ev-pill" id="pillRim">--</span>
           </div>
           <div class="ev-body" id="bodyRim"></div>
@@ -152,7 +157,7 @@
           <div class="ev-body" id="bodyClearance"></div>
         </div>
 
-        <div class="ev-card ev-alt">
+        <div class="ev-card ev-alt" id="evAlt">
           <div class="ev-head">
             <span>安価な定番代替サイズ候補 (クリックで検討に反映)</span>
           </div>
@@ -170,6 +175,6 @@
   </main>
 
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=8"></script>
+  <script defer src="app.js?v=9"></script>
 </body>
 </html>

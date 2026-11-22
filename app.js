@@ -95,6 +95,7 @@ const POPULAR_BUDGET_SIZES = [
 ];
 
 const state = {
+  mode: 'both',
   base: { width: 195, aspect: 65, inch: 15, j: 6.0, et: 45, inMargin: 10, outMargin: 12 },
   useMax: false,
   max: { width: 215, aspect: 45, inch: 17, j: 7.0, et: 50 },
@@ -150,6 +151,12 @@ function calcRimRange(width, aspect) {
   return { stdJ, minJ, maxJ };
 }
 
+function calcTireRangeForRim(j) {
+  const stdRaw = Math.round((((Number(j) || 6) * INCH_MM) / 0.72) / 10) * 10;
+  const stdW = Math.max(135, Math.min(315, stdRaw));
+  return { stdW, minW: stdW - 10, maxW: stdW + 10 };
+}
+
 function calcMetrics(spec, spacer = 0) {
   const inch = Math.max(10, Number(spec.inch) || 15);
   const j = Math.max(3.5, Number(spec.j) || 6);
@@ -190,6 +197,7 @@ function fmt(v, unit = 'mm') {
 }
 
 function evaluateEvidence() {
+  const mode = state.mode || 'both';
   const tm = calcMetrics(state.target, state.target.spacer);
   const bm = calcMetrics(state.base, 0);
   const mx = state.useMax ? calcMetrics(state.max, 0) : null;
@@ -217,32 +225,31 @@ function evaluateEvidence() {
     if (actualSpeedAt40 > 42.5 || actualSpeedAt40 < 31.0 || maxDiaPct > 2.5 || minDiaPct < -3.5) {
       diaLevel = 'ng';
       diaText = '車検NG/干渉恐れ';
-      ngList.push(`【外径 NG】最小(${minDia.toFixed(0)}mm)〜最大(${maxDia.toFixed(0)}mm)の純正許容レンジから大きく外れています（最小比 ${fmt(diaDiff)}, メーター40km/h時実測 ${actualSpeedAt40.toFixed(1)}km/h）。`);
+      if (mode !== 'wheel') ngList.push(`【外径 NG】最小(${minDia.toFixed(0)}mm)〜最大(${maxDia.toFixed(0)}mm)の純正許容レンジから大きく外れています（最小比 ${fmt(diaDiff)}, メーター40km/h時実測 ${actualSpeedAt40.toFixed(1)}km/h）。`);
     } else if (tm.tireDia > maxDia + 3 || tm.tireDia < minDia - 5 || Math.abs(diaPct) > 2.5) {
       diaLevel = 'warn';
       diaText = '注意(レンジ外/誤差)';
-      warnList.push(`【外径 注意】純正最小〜最大レンジ(${minDia.toFixed(0)}〜${maxDia.toFixed(0)}mm)を少し外れています（検討 ${tm.tireDia.toFixed(0)}mm / 実速度 ${actualSpeedAt40.toFixed(1)}km/h）。干渉と地上高変化(${fmt(groundClearanceDiff)})を確認してください。`);
+      if (mode !== 'wheel') warnList.push(`【外径 注意】純正最小〜最大レンジ(${minDia.toFixed(0)}〜${maxDia.toFixed(0)}mm)を少し外れています（検討 ${tm.tireDia.toFixed(0)}mm / 実速度 ${actualSpeedAt40.toFixed(1)}km/h）。干渉と地上高変化(${fmt(groundClearanceDiff)})を確認してください。`);
     } else {
-      okList.push(`外径 ${tm.tireDia.toFixed(0)}mm は純正最小〜最大レンジ (${minDia.toFixed(0)}〜${maxDia.toFixed(0)}mm) 内・メーター検査も安全圏です。`);
+      if (mode !== 'wheel') okList.push(`外径 ${tm.tireDia.toFixed(0)}mm は純正最小〜最大レンジ (${minDia.toFixed(0)}〜${maxDia.toFixed(0)}mm) 内・メーター検査も安全圏です。`);
     }
   } else {
     if (actualSpeedAt40 > 42.5 || actualSpeedAt40 < 31.0 || diaPct > 3.5 || diaPct < -4.0) {
       diaLevel = 'ng';
       diaText = '車検NG/干渉恐れ';
-      ngList.push(`【外径 NG】現在比 ${fmt(diaDiff)} (${diaPct >= 0 ? '+' : ''}${diaPct.toFixed(1)}%)。メーター40km/h時の実速度が ${actualSpeedAt40.toFixed(1)}km/h となり、平成19年以降のスピードメーター検査基準（30.9〜42.5km/h）またはタイヤハウス干渉限界を逸脱する恐れがあります。`);
+      if (mode !== 'wheel') ngList.push(`【外径 NG】現在比 ${fmt(diaDiff)} (${diaPct >= 0 ? '+' : ''}${diaPct.toFixed(1)}%)。メーター40km/h時の実速度が ${actualSpeedAt40.toFixed(1)}km/h となり、平成19年以降のスピードメーター検査基準（30.9〜42.5km/h）またはタイヤハウス干渉限界を逸脱する恐れがあります。`);
     } else if (Math.abs(diaPct) > 2.0) {
       diaLevel = 'warn';
       diaText = '注意(誤差/車高)';
-      warnList.push(`【外径 注意】現在比 ${fmt(diaDiff)} (${diaPct >= 0 ? '+' : ''}${diaPct.toFixed(1)}%)。車検基準内（実速度 ${actualSpeedAt40.toFixed(1)}km/h）ですが、最低地上高が ${fmt(groundClearanceDiff)} 変化し、ステア全切り時の干渉確認が必要です。`);
+      if (mode !== 'wheel') warnList.push(`【外径 注意】現在比 ${fmt(diaDiff)} (${diaPct >= 0 ? '+' : ''}${diaPct.toFixed(1)}%)。車検基準内（実速度 ${actualSpeedAt40.toFixed(1)}km/h）ですが、最低地上高が ${fmt(groundClearanceDiff)} 変化し、ステア全切り時の干渉確認が必要です。`);
     } else {
-      okList.push(`外径差 ${fmt(diaDiff)} (${diaPct >= 0 ? '+' : ''}${diaPct.toFixed(1)}%) で現在とほぼ同等・車検メーター誤差も安全圏です。`);
+      if (mode !== 'wheel') okList.push(`外径差 ${fmt(diaDiff)} (${diaPct >= 0 ? '+' : ''}${diaPct.toFixed(1)}%) で現在とほぼ同等・車検メーター誤差も安全圏です。`);
     }
   }
 
   // 2. ロードインデックス (STD / XL 完全自動算出) & 必要空気圧逆算
   const baseLoad = autoCalcLoadSpec(bm.width, bm.aspect, bm.inch);
   const tgtLoad = autoCalcLoadSpec(tm.width, tm.aspect, tm.inch);
-  // 基準タイヤの必要耐荷重（扁平45以下はXL 270kPa相当、通常はSTD 240kPa基準）
   const reqKg = baseLoad.primaryIsXl
     ? calcLoadCapacityAtKpa(baseLoad.xlLi, true, 270)
     : baseLoad.stdMaxKg;
@@ -254,9 +261,7 @@ function evaluateEvidence() {
   let loadText = 'STD/XLともOK';
   let recommendedKpa = 240;
 
-  // STD 240kPa (通常基準) で reqKg をクリアするか
   if (tgtStdAt240 >= reqKg) {
-    // 240kPa以下で済む必要kPaも参考計算（最低200〜240）
     recommendedKpa = 240;
     for (let p = 200; p <= 240; p += 10) {
       if (calcLoadCapacityAtKpa(tgtLoad.stdLi, false, p) >= reqKg) {
@@ -264,9 +269,8 @@ function evaluateEvidence() {
         break;
       }
     }
-    okList.push(`耐荷重 (自動算出): 標準STD(LI ${tgtLoad.stdLi}=${tgtStdAt240}kg) / XL(LI ${tgtLoad.xlLi}=${tgtXlAt290}kg) ともに基準必要耐荷重 ${reqKg}kg (基準LI ${baseLoad.primaryIsXl ? `${baseLoad.xlLi}XL` : baseLoad.stdLi}) を確保しています。`);
+    if (mode !== 'wheel') okList.push(`耐荷重 (自動算出): 標準STD(LI ${tgtLoad.stdLi}=${tgtStdAt240}kg) / XL(LI ${tgtLoad.xlLi}=${tgtXlAt290}kg) ともに基準必要耐荷重 ${reqKg}kg (基準LI ${baseLoad.primaryIsXl ? `${baseLoad.xlLi}XL` : baseLoad.stdLi}) を確保しています。`);
   } else if (tgtXlAt290 >= reqKg) {
-    // XL規格なら何kPaでreqKgを超えるか逆算
     recommendedKpa = 290;
     for (let p = 240; p <= 290; p += 5) {
       if (calcLoadCapacityAtKpa(tgtLoad.xlLi, true, p) >= reqKg) {
@@ -276,92 +280,124 @@ function evaluateEvidence() {
     }
     loadLevel = 'warn';
     loadText = `XL ${recommendedKpa}kPa必要`;
-    warnList.push(`【耐荷重 XL指定・昇圧でOK】標準STD(LI ${tgtLoad.stdLi}=${tgtStdAt240}kg)では基準必要値 ${reqKg}kg に ${reqKg - tgtStdAt240}kg 不足しますが、XL規格(LI ${tgtLoad.xlLi})のタイヤを選び空気圧を「${recommendedKpa}kPa」へ設定すれば必要耐荷重を確保できます。`);
+    if (mode !== 'wheel') warnList.push(`【耐荷重 XL指定・昇圧でOK】標準STD(LI ${tgtLoad.stdLi}=${tgtStdAt240}kg)では基準必要値 ${reqKg}kg に ${reqKg - tgtStdAt240}kg 不足しますが、XL規格(LI ${tgtLoad.xlLi})のタイヤを選び空気圧を「${recommendedKpa}kPa」へ設定すれば必要耐荷重を確保できます。`);
   } else {
     loadLevel = 'ng';
     loadText = `XL最大圧でも${reqKg - tgtXlAt290}kg不足`;
-    ngList.push(`【耐荷重 NG】エアボリューム不足のため、XL規格(LI ${tgtLoad.xlLi})の最大空気圧290kPaでも耐荷重 ${tgtXlAt290}kg となり、基準必要値 ${reqKg}kg に ${reqKg - tgtXlAt290}kg 不足します。バースト・偏摩耗・車検不合格の危険があるため不可です。`);
+    if (mode !== 'wheel') ngList.push(`【耐荷重 NG】エアボリューム不足のため、XL規格(LI ${tgtLoad.xlLi})の最大空気圧290kPaでも耐荷重 ${tgtXlAt290}kg となり、基準必要値 ${reqKg}kg に ${reqKg - tgtXlAt290}kg 不足します。バースト・偏摩耗・車検不合格の危険があるため不可です。`);
   }
 
-  // 3. タイヤ幅 × リム幅 (JATMA適用リム幅レンジ)
+  // 3. リム幅・推奨幅チェック
   const rimRange = calcRimRange(tm.width, tm.aspect);
+  const baseStdJ = calcRimRange(bm.width, bm.aspect).stdJ;
+  const tireRangeForRim = calcTireRangeForRim(tm.j);
   let rimLevel = 'ok';
   let rimText = '適用範囲内';
-  if (tm.j < rimRange.minJ - 0.5 || tm.j > rimRange.maxJ + 0.5) {
-    rimLevel = 'ng';
-    rimText = '規格外(危険)';
-    ngList.push(`【リム幅 NG】タイヤ幅 ${tm.width}mm の適用リム幅は ${rimRange.minJ.toFixed(1)}J〜${rimRange.maxJ.toFixed(1)}J です。${tm.j.toFixed(1)}J は大きく外れており、ビード落ちやエア漏れ・サイドウォール破損の危険があります。`);
-  } else if (tm.j < rimRange.minJ || tm.j > rimRange.maxJ) {
-    rimLevel = 'warn';
-    rimText = tm.j > rimRange.maxJ ? '軽度引っ張り' : '軽度ムッチリ';
-    warnList.push(`【リム幅 マッチング外】JATMA適用(${rimRange.minJ.toFixed(1)}〜${rimRange.maxJ.toFixed(1)}J)から 0.5J 差の「${rimText}」状態です。通常走行は可能な圏内ですが、空気圧管理と縁石接触に注意してください。`);
+
+  if (mode === 'wheel') {
+    rimLevel = 'ok';
+    rimText = `${bm.j.toFixed(1)}J → ${tm.j.toFixed(1)}J`;
+    okList.push(`リム幅 ${bm.j.toFixed(1)}J → ${tm.j.toFixed(1)}J / 推奨タイヤ幅 ${tireRangeForRim.minW}〜${tireRangeForRim.maxW}mm`);
+  } else if (mode === 'tire') {
+    if (baseStdJ < rimRange.minJ || baseStdJ > rimRange.maxJ) {
+      rimLevel = 'warn';
+      rimText = '純正リム幅注意';
+      warnList.push(`【リム幅 注意】基準タイヤ標準リム幅(${baseStdJ.toFixed(1)}J前後)は検討タイヤ幅 ${tm.width}mm のJATMA適用レンジ(${rimRange.minJ.toFixed(1)}〜${rimRange.maxJ.toFixed(1)}J)から外れています。`);
+    } else {
+      rimLevel = 'ok';
+      rimText = `適用 ${rimRange.minJ.toFixed(1)}〜${rimRange.maxJ.toFixed(1)}J`;
+      okList.push(`タイヤ幅 ${tm.width}mm のJATMA適用リム幅は ${rimRange.minJ.toFixed(1)}J〜${rimRange.maxJ.toFixed(1)}J（標準 ${rimRange.stdJ.toFixed(1)}J）です。`);
+    }
   } else {
-    okList.push(`リム幅 ${tm.j.toFixed(1)}J はタイヤ幅 ${tm.width}mm のJATMA適用レンジ (${rimRange.minJ.toFixed(1)}〜${rimRange.maxJ.toFixed(1)}J) 内に収まっています。`);
+    if (tm.j < rimRange.minJ - 0.5 || tm.j > rimRange.maxJ + 0.5) {
+      rimLevel = 'ng';
+      rimText = '規格外(危険)';
+      ngList.push(`【リム幅 NG】タイヤ幅 ${tm.width}mm の適用リム幅は ${rimRange.minJ.toFixed(1)}J〜${rimRange.maxJ.toFixed(1)}J です。${tm.j.toFixed(1)}J は大きく外れており、ビード落ちやエア漏れ・サイドウォール破損の危険があります。`);
+    } else if (tm.j < rimRange.minJ || tm.j > rimRange.maxJ) {
+      rimLevel = 'warn';
+      rimText = tm.j > rimRange.maxJ ? '軽度引っ張り' : '軽度ムッチリ';
+      warnList.push(`【リム幅 マッチング外】JATMA適用(${rimRange.minJ.toFixed(1)}〜${rimRange.maxJ.toFixed(1)}J)から 0.5J 差の「${rimText}」状態です。通常走行は可能な圏内ですが、空気圧管理と縁石接触に注意してください。`);
+    } else {
+      okList.push(`リム幅 ${tm.j.toFixed(1)}J はタイヤ幅 ${tm.width}mm のJATMA適用レンジ (${rimRange.minJ.toFixed(1)}〜${rimRange.maxJ.toFixed(1)}J) 内に収まっています。`);
+    }
   }
 
-  // 4. 基準比クリアランス (イン側余裕:最小基準 / アウト側余裕:最大基準または現在基準)
+  // 4. 基準比クリアランス (wheelモード時はリム端のみで厳密算出)
   const outRef = mx || bm;
   const rimRadDiff = tm.rimRad - bm.rimRad;
-  const innerRimDiff = tm.innerRimX - bm.innerRimX; // 負 = さらに内側(-X)に入る
+  const innerRimDiff = tm.innerRimX - bm.innerRimX;
   const innerTireDiff = tm.innerTireX - bm.innerTireX;
-  const outerRimDiff = tm.outerRimX - outRef.outerRimX; // 正 = 外側基準より外(+X)に出る
+  const outerRimDiff = tm.outerRimX - outRef.outerRimX;
   const outerTireDiff = tm.outerTireX - outRef.outerTireX;
 
   const inMargin = Math.max(0, Number(state.base.inMargin) || 0);
   const outMargin = Math.max(0, Number(state.base.outMargin) || 0);
-  const inShift = Math.max(0, -Math.min(innerRimDiff, innerTireDiff));
+  const inShift = mode === 'wheel'
+    ? Math.max(0, -innerRimDiff)
+    : Math.max(0, -Math.min(innerRimDiff, innerTireDiff));
   const inRemain = inMargin - inShift;
-  const outShift = Math.max(0, Math.max(outerRimDiff, outerTireDiff));
+  const outShift = mode === 'wheel'
+    ? Math.max(0, outerRimDiff)
+    : Math.max(0, Math.max(outerRimDiff, outerTireDiff));
   const outRemain = outMargin - outShift;
 
   let clearLevel = 'ok';
   let clearText = 'クリアランス安全';
 
-  if (rimRadDiff < -2) {
-    clearLevel = 'ng';
-    clearText = '小径・ブレーキ干渉恐れ';
-    ngList.push(`【小径 NG】最小基準 (${bm.inch}インチ) より小さい ${tm.inch}インチ のため、ブレーキキャリパー／ローターとホイール内側が干渉する可能性が高いです。`);
-  }
-  if (inRemain < 0) {
-    clearLevel = 'ng';
-    clearText = `イン側干渉 (${inRemain.toFixed(1)}mm)`;
-    ngList.push(`【イン側干渉 NG】最小基準の内側からさらに ${inShift.toFixed(1)}mm 奥に入るため、設定したイン側余裕(${inMargin}mm)を ${Math.abs(inRemain).toFixed(1)}mm 超えてストラット・サス・インナーに干渉します。`);
-  }
-  if (outRemain < 0) {
-    clearLevel = 'ng';
-    clearText = `アウト側ハミタイ (${outRemain.toFixed(1)}mm)`;
-    ngList.push(`【アウト側ハミタイ NG】${mx ? '最大純正枠' : '現在基準'}より外に ${outShift.toFixed(1)}mm 出るため、設定したアウト側フェンダー余裕(${outMargin}mm)を ${Math.abs(outRemain).toFixed(1)}mm 超えてハミタイ・フェンダー干渉します。`);
-  }
+  if (mode !== 'tire') {
+    if (rimRadDiff < -2) {
+      clearLevel = 'ng';
+      clearText = '小径・ブレーキ干渉恐れ';
+      ngList.push(`【小径 NG】最小基準 (${bm.inch}インチ) より小さい ${tm.inch}インチ のため、ブレーキキャリパー／ローターとホイール内側が干渉する可能性が高いです。`);
+    }
+    if (inRemain < 0) {
+      clearLevel = 'ng';
+      clearText = `イン側干渉 (${inRemain.toFixed(1)}mm)`;
+      ngList.push(`【イン側干渉 NG】最小基準の内側からさらに ${inShift.toFixed(1)}mm 奥に入るため、設定したイン側余裕(${inMargin}mm)を ${Math.abs(inRemain).toFixed(1)}mm 超えてストラット・サス・インナーに干渉します。`);
+    }
+    if (outRemain < 0) {
+      clearLevel = 'ng';
+      clearText = `アウト側ハミタイ (${outRemain.toFixed(1)}mm)`;
+      ngList.push(`【アウト側ハミタイ NG】${mx ? '最大純正枠' : '現在基準'}より外に ${outShift.toFixed(1)}mm 出るため、設定したアウト側フェンダー余裕(${outMargin}mm)を ${Math.abs(outRemain).toFixed(1)}mm 超えてハミタイ・フェンダー干渉します。`);
+    }
 
-  if (clearLevel === 'ok') {
-    if (inRemain <= 3 && inShift > 0) {
-      clearLevel = 'warn';
-      clearText = `イン側ギリギリ (残${inRemain.toFixed(1)}mm)`;
-      warnList.push(`【イン側 ギリギリ】イン側余裕まで残り ${inRemain.toFixed(1)}mm です。ステア全切り時やタイヤたわみ時の接触に注意してください。`);
-    }
-    if (outRemain <= 3 && outShift > 0) {
-      clearLevel = 'warn';
-      clearText = `ツライチ限界 (残${outRemain.toFixed(1)}mm)`;
-      warnList.push(`【アウト側 ツライチ限界】フェンダー限界まで残り ${outRemain.toFixed(1)}mm のツライチ状態です。個体差やバンプ時の干渉に留意してください。`);
-    }
     if (clearLevel === 'ok') {
-      okList.push(`クリアランス安全圏（イン側残り +${inRemain.toFixed(1)}mm / アウト側残り +${outRemain.toFixed(1)}mm）です。`);
+      if (inRemain <= 3 && inShift > 0) {
+        clearLevel = 'warn';
+        clearText = `イン側ギリギリ (残${inRemain.toFixed(1)}mm)`;
+        warnList.push(`【イン側 ギリギリ】イン側余裕まで残り ${inRemain.toFixed(1)}mm です。ステア全切り時や振動時の接触に注意してください。`);
+      }
+      if (outRemain <= 3 && outShift > 0) {
+        clearLevel = 'warn';
+        clearText = `ツライチ限界 (残${outRemain.toFixed(1)}mm)`;
+        warnList.push(`【アウト側 ツライチ限界】フェンダー限界まで残り ${outRemain.toFixed(1)}mm のツライチ状態です。個体差やバンプ時の干渉に留意してください。`);
+      }
+      if (clearLevel === 'ok') {
+        okList.push(`クリアランス安全圏（イン側残り +${inRemain.toFixed(1)}mm / アウト側残り +${outRemain.toFixed(1)}mm）です。`);
+      }
     }
   }
 
   let overall = 'ok';
-  if (ngList.length > 0) overall = 'ng';
-  else if (warnList.length > 0 || Math.abs(diaDiff) > 2 || tm.inch !== bm.inch || tm.width !== bm.width) overall = 'warn';
-
-  if (ngList.length === 0 && warnList.length === 0 && Math.abs(diaPct) <= 1.5) {
-    overall = 'ok';
+  if (mode === 'wheel') {
+    if (ngList.length > 0) overall = 'ng';
+    else if (warnList.length > 0) overall = 'warn';
+  } else if (mode === 'tire') {
+    if (ngList.length > 0) overall = 'ng';
+    else if (warnList.length > 0 || Math.abs(diaPct) > 1.5) overall = 'warn';
+  } else {
+    if (ngList.length > 0) overall = 'ng';
+    else if (warnList.length > 0 || Math.abs(diaDiff) > 2 || tm.inch !== bm.inch || tm.width !== bm.width) overall = 'warn';
+    if (ngList.length === 0 && warnList.length === 0 && Math.abs(diaPct) <= 1.5) {
+      overall = 'ok';
+    }
   }
 
   return {
-    tm, bm, mx, overall, ngList, warnList, okList,
+    mode, tm, bm, mx, overall, ngList, warnList, okList,
     diaDiff, diaPct, actualSpeedAt40, groundClearanceDiff, diaLevel, diaText,
     baseLoad, tgtLoad, reqKg, tgtStdAt240, tgtXlAt290, recommendedKpa, loadLevel, loadText,
-    rimRange, rimLevel, rimText,
+    rimRange, baseStdJ, tireRangeForRim, rimLevel, rimText,
     rimRadDiff, innerRimDiff, innerTireDiff, outerRimDiff, outerTireDiff,
     inMargin, outMargin, inShift, inRemain, outShift, outRemain, clearLevel, clearText
   };
@@ -376,13 +412,44 @@ function setCard(cardId, pillId, level, text) {
 
 function renderEvidence() {
   const ev = evaluateEvidence();
-  const { tm, bm, mx } = ev;
+  const { tm, bm, mx, mode } = ev;
 
-  document.getElementById('baseSummary').textContent =
-    `${bm.width}/${bm.aspect}R${bm.inch} | ${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}`;
-  document.getElementById('targetSummary').textContent =
-    `${tm.width}/${tm.aspect}R${tm.inch} | ${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}`;
+  document.body.dataset.mode = mode;
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  if (mode === 'tire') {
+    document.getElementById('baseSummary').textContent = `${bm.width}/${bm.aspect}R${bm.inch}`;
+    document.getElementById('targetSummary').textContent = `${tm.width}/${tm.aspect}R${tm.inch}`;
+    document.getElementById('baseQuick').placeholder = '例: 195/65R15 (全角・ハイフンOK)';
+    document.getElementById('maxQuick').placeholder = '例: 215/45R17';
+    document.getElementById('targetQuick').placeholder = '例: 215/45ZR17 91W XL';
+  } else if (mode === 'wheel') {
+    document.getElementById('baseSummary').textContent = `${bm.inch}×${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}`;
+    document.getElementById('targetSummary').textContent = `${tm.inch}×${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}`;
+    document.getElementById('baseQuick').placeholder = '例: 15×6.0J +45 (15 6J ET45等OK)';
+    document.getElementById('maxQuick').placeholder = '例: 17×7.0J +50';
+    document.getElementById('targetQuick').placeholder = '例: 17×7.5J +45 スペーサー5mm';
+  } else {
+    document.getElementById('baseSummary').textContent =
+      `${bm.width}/${bm.aspect}R${bm.inch} | ${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}`;
+    document.getElementById('targetSummary').textContent =
+      `${tm.width}/${tm.aspect}R${tm.inch} | ${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}`;
+    document.getElementById('baseQuick').placeholder = '例: 195/65R15 6.0J +45 (全角・ET・ハイフンOK)';
+    document.getElementById('maxQuick').placeholder = '例: 215/45R17 7.0J +50';
+    document.getElementById('targetQuick').placeholder = '例: 215/45ZR17 91W XL 17×7.5J ET45';
+  }
+
   document.getElementById('legendMaxItem').hidden = !state.useMax;
+  document.getElementById('marginBar').hidden = (mode === 'tire');
+  document.getElementById('evDiameter').hidden = (mode === 'wheel');
+  document.getElementById('diameterGaugeBox').hidden = (mode === 'wheel');
+  document.getElementById('evLoad').hidden = (mode === 'wheel');
+  document.getElementById('evClearance').hidden = (mode === 'tire');
+  document.getElementById('evAlt').hidden = (mode === 'wheel');
+  document.getElementById('legendInLim').hidden = (mode === 'tire');
+  document.getElementById('legendOutLim').hidden = (mode === 'tire');
 
   const banner = document.getElementById('verdictBanner');
   const badge = document.getElementById('verdictBadge');
@@ -390,23 +457,33 @@ function renderEvidence() {
   const talk = document.getElementById('verdictTalk');
   const reasons = document.getElementById('verdictReasons');
 
-  const rangeIntro = mx
-    ? `同車種の最小基準（${bm.width}/${bm.aspect}R${bm.inch}）と最大基準（${mx.width}/${mx.aspect}R${mx.inch}）の許容枠と比較し`
-    : `今のお車の基準（${bm.width}/${bm.aspect}R${bm.inch}）と比べると`;
+  const rangeIntro = mode === 'wheel'
+    ? (mx
+      ? `同車種の最小基準（${bm.inch}×${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}）と最大基準（${mx.inch}×${mx.j.toFixed(1)}J ${mx.et >= 0 ? '+' : ''}${mx.et}）の許容枠と比較し`
+      : `今の基準ホイール（${bm.inch}×${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}）と比べると`)
+    : (mx
+      ? `同車種の最小基準（${bm.width}/${bm.aspect}R${bm.inch}）と最大基準（${mx.width}/${mx.aspect}R${mx.inch}）の許容枠と比較し`
+      : `今のお車の基準（${bm.width}/${bm.aspect}R${bm.inch}）と比べると`);
 
   banner.className = `verdict-banner status-${ev.overall}`;
   if (ev.overall === 'ng') {
     badge.textContent = '装着不可 / 非推奨';
     title.textContent = '根拠データ上、装着リスクが高いためおすすめできません';
-    talk.textContent = `💬 接客トーク例: 「ご希望のサイズは価格面では魅力的ですが、${rangeIntro}【${ev.ngList[0].match(/【(.*?)】/)?.[1] || '安全基準'}】に引っかかるため装着できません（危険があります）。すぐ下の定番代替サイズなら安全に代用できます。」`;
+    talk.textContent = mode === 'wheel'
+      ? `💬 接客トーク例: 「ご希望のホイールは、${rangeIntro}【${ev.ngList[0]?.match(/【(.*?)】/)?.[1] || 'クリアランス基準'}】に引っかかるため装着できません（干渉の危険があります）。インセットやJ数の見直しをご検討ください。」`
+      : `💬 接客トーク例: 「ご希望のサイズは価格面では魅力的ですが、${rangeIntro}【${ev.ngList[0]?.match(/【(.*?)】/)?.[1] || '安全基準'}】に引っかかるため装着できません（危険があります）。すぐ下の定番代替サイズなら安全に代用できます。」`;
   } else if (ev.overall === 'warn') {
     badge.textContent = 'マッチング外・条件付きOK';
-    title.textContent = '純正サイズ違いですが、数値上は比較的装着できる圏内です';
-    talk.textContent = `💬 接客トーク例: 「純正と違うサイズですが、${rangeIntro}外径差(${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%)・耐荷重・リム幅を計算上クリアしています。下の条件（空気圧 ${ev.recommendedKpa}kPa 設定や出面確認）を守れば比較的安心して履けます。」`;
+    title.textContent = '基準サイズと異なりますが、条件・注意点を踏まえれば検討できる圏内です';
+    talk.textContent = mode === 'wheel'
+      ? `💬 接客トーク例: 「${rangeIntro}大きな干渉は回避できていますが、フェンダー・サスペンションとのクリアランスが限界付近です。実車の個体差やバンプ時の干渉にご注意ください。」`
+      : `💬 接客トーク例: 「純正と違うサイズですが、${rangeIntro}外径差(${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%)・耐荷重を計算上クリアしています。下の条件（空気圧 ${ev.recommendedKpa}kPa 設定など）を守れば比較的安心して履けます。」`;
   } else {
     badge.textContent = '適合・安全圏';
     title.textContent = mx ? '最小〜最大マッチングの安全範囲内に収まっています' : '現在のサイズと同等レンジで問題なく装着できます';
-    talk.textContent = `💬 接客トーク例: 「外径・リム幅・耐荷重・出面すべて${mx ? '純正上下限レンジ' : '現在の基準'}内に綺麗に収まっていますので、このまま安心してお選びいただけます。」`;
+    talk.textContent = mode === 'wheel'
+      ? `💬 接客トーク例: 「リム幅・インセットのクリアランスおよびブレーキ径すべて${mx ? '上下限レンジ' : '現在の基準'}内に綺麗に収まっていますので、このまま安心してお選びいただけます。」`
+      : `💬 接客トーク例: 「外径・耐荷重${mode === 'both' ? '・リム幅・出面すべて' : '・適用リム幅すべて'}${mx ? '純正上下限レンジ' : '現在の基準'}内に綺麗に収まっていますので、このまま安心してお選びいただけます。」`;
   }
 
   reasons.innerHTML = [...ev.ngList, ...ev.warnList, ...ev.okList].map(r => `<li>${r}</li>`).join('');
@@ -442,19 +519,38 @@ function renderEvidence() {
     `検討タイヤ (自動算出): STD LI <strong>${ev.tgtLoad.stdLi}</strong>(最大240kPa時 <strong>${ev.tgtStdAt240}kg</strong>) / XL LI <strong>${ev.tgtLoad.xlLi}</strong>(最大290kPa時 <strong>${ev.tgtXlAt290}kg</strong>)` +
     (ev.loadLevel === 'warn' ? `<br>→ <strong>XL規格タイヤ選択＋${ev.recommendedKpa}kPa充填で必要耐荷重をクリア</strong>` : '');
 
-  // 3. リム幅
+  // 3. リム幅・推奨幅
   setCard('evRim', 'pillRim', ev.rimLevel, ev.rimText);
-  document.getElementById('bodyRim').innerHTML =
-    `タイヤ幅 <strong>${tm.width}mm</strong> のJATMA適用レンジ: <strong>${ev.rimRange.minJ.toFixed(1)}J 〜 ${ev.rimRange.maxJ.toFixed(1)}J</strong> (標準 ${ev.rimRange.stdJ.toFixed(1)}J)<br>` +
-    `検討ホイール: <strong>${tm.j.toFixed(1)}J</strong> (${tm.j < ev.rimRange.minJ ? 'やや幅狭/ムッチリ寄り' : tm.j > ev.rimRange.maxJ ? 'やや幅広/引っ張り寄り' : '標準適合レンジ内'})`;
+  if (mode === 'wheel') {
+    document.getElementById('headRim').textContent = '3. リム幅変化・推奨タイヤ幅目安';
+    document.getElementById('bodyRim').innerHTML =
+      `基準ホイール <strong>${bm.j.toFixed(1)}J</strong> → 検討 <strong>${tm.j.toFixed(1)}J</strong> (幅変化 <strong>${fmt((tm.j - bm.j) * INCH_MM)}</strong>)<br>` +
+      `推奨組み合わせタイヤ幅目安: <strong>${ev.tireRangeForRim.minW}〜${ev.tireRangeForRim.maxW}mm</strong> (標準 <strong>${ev.tireRangeForRim.stdW}mm</strong>)`;
+  } else if (mode === 'tire') {
+    document.getElementById('headRim').textContent = '3. タイヤ幅 × リム幅 (JATMA適用レンジ)';
+    document.getElementById('bodyRim').innerHTML =
+      `タイヤ幅 <strong>${tm.width}mm</strong> のJATMA適用レンジ: <strong>${ev.rimRange.minJ.toFixed(1)}J 〜 ${ev.rimRange.maxJ.toFixed(1)}J</strong> (標準 ${ev.rimRange.stdJ.toFixed(1)}J)<br>` +
+      `純正タイヤ標準リム幅目安: <strong>${ev.baseStdJ.toFixed(1)}J前後</strong> (ホイール変更なしで履けるかの参考値)`;
+  } else {
+    document.getElementById('headRim').textContent = '3. タイヤ幅 × リム幅 (JATMA適用レンジ)';
+    document.getElementById('bodyRim').innerHTML =
+      `タイヤ幅 <strong>${tm.width}mm</strong> のJATMA適用レンジ: <strong>${ev.rimRange.minJ.toFixed(1)}J 〜 ${ev.rimRange.maxJ.toFixed(1)}J</strong> (標準 ${ev.rimRange.stdJ.toFixed(1)}J)<br>` +
+      `検討ホイール: <strong>${tm.j.toFixed(1)}J</strong> (${tm.j < ev.rimRange.minJ ? 'やや幅狭/ムッチリ寄り' : tm.j > ev.rimRange.maxJ ? 'やや幅広/引っ張り寄り' : '標準適合レンジ内'})`;
+  }
 
   // 4. クリアランス
   setCard('evClearance', 'pillClearance', ev.clearLevel, ev.clearText);
-  document.getElementById('bodyClearance').innerHTML =
-    `【イン側 (最小比 / 余裕 ${ev.inMargin}mm)】入り込み <strong>${ev.inShift.toFixed(1)}mm</strong> → 残り <strong>${fmt(ev.inRemain)}</strong> (内リム ${fmt(ev.innerRimDiff)} / 径R ${fmt(ev.rimRadDiff)})<br>` +
-    `【アウト側 (${mx ? '最大枠比' : '現在比'} / 余裕 ${ev.outMargin}mm)】出幅 <strong>${ev.outShift.toFixed(1)}mm</strong> → 残り <strong>${fmt(ev.outRemain)}</strong> (外リム ${fmt(ev.outerRimDiff)} / 外タイヤ ${fmt(ev.outerTireDiff)})`;
+  if (mode === 'wheel') {
+    document.getElementById('bodyClearance').innerHTML =
+      `【イン側 (最小比 / 余裕 ${ev.inMargin}mm)】リム入り込み <strong>${ev.inShift.toFixed(1)}mm</strong> → 残り <strong>${fmt(ev.inRemain)}</strong> (内リム ${fmt(ev.innerRimDiff)} / 径R ${fmt(ev.rimRadDiff)})<br>` +
+      `【アウト側 (${mx ? '最大枠比' : '現在比'} / 余裕 ${ev.outMargin}mm)】リム出幅 <strong>${ev.outShift.toFixed(1)}mm</strong> → 残り <strong>${fmt(ev.outRemain)}</strong> (外リム ${fmt(ev.outerRimDiff)})`;
+  } else {
+    document.getElementById('bodyClearance').innerHTML =
+      `【イン側 (最小比 / 余裕 ${ev.inMargin}mm)】入り込み <strong>${ev.inShift.toFixed(1)}mm</strong> → 残り <strong>${fmt(ev.inRemain)}</strong> (内リム ${fmt(ev.innerRimDiff)} / 径R ${fmt(ev.rimRadDiff)})<br>` +
+      `【アウト側 (${mx ? '最大枠比' : '現在比'} / 余裕 ${ev.outMargin}mm)】出幅 <strong>${ev.outShift.toFixed(1)}mm</strong> → 残り <strong>${fmt(ev.outRemain)}</strong> (外リム ${fmt(ev.outerRimDiff)} / 外タイヤ ${fmt(ev.outerTireDiff)})`;
+  }
 
-  renderAlternatives(bm, tm);
+  if (mode !== 'wheel') renderAlternatives(bm, tm);
   renderAffiliateLinks(ev);
   drawEvidenceCanvas(ev);
   window.__lastEvidence = ev;
@@ -498,13 +594,18 @@ function renderAlternatives(bm, tm) {
 }
 
 function renderAffiliateLinks(ev) {
-  const { tm } = ev;
+  const { tm, mode } = ev;
   const sizeStr = `${tm.width}/${tm.aspect}R${tm.inch}`;
-  const items = [
-    { label: `タイヤ「${sizeStr}」価格比較`, query: `${sizeStr} サマータイヤ` },
-    { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー` }
-  ];
-  if (tm.spacer > 0 || ev.outerRimDiff < -5) {
+  const items = mode === 'wheel'
+    ? [
+        { label: `ホイール「${tm.inch}インチ ${tm.j}J」検索`, query: `${tm.inch}インチ ${tm.j}J アルミホイール` },
+        { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー` }
+      ]
+    : [
+        { label: `タイヤ「${sizeStr}」価格比較`, query: `${sizeStr} サマータイヤ` },
+        { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー` }
+      ];
+  if (mode !== 'tire' && (tm.spacer > 0 || ev.outerRimDiff < -5)) {
     items.push({ label: `ホイールスペーサー (${tm.spacer || 5}mm等)`, query: `ホイールスペーサー ${tm.spacer || 5}mm` });
   }
 
@@ -539,11 +640,13 @@ function drawEvidenceCanvas(ev) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, w, h);
 
-  const { tm, bm, mx } = ev;
-  const maxRad = Math.max(tm.tireRad, bm.tireRad, mx ? mx.tireRad : 0, 340);
+  const { tm, bm, mx, mode } = ev;
+  const maxRad = mode === 'wheel'
+    ? Math.max(tm.rimRad, bm.rimRad, mx ? mx.rimRad : 0, 260)
+    : Math.max(tm.tireRad, bm.tireRad, mx ? mx.tireRad : 0, 340);
   const cyAxis = h - 32;
   const scale = Math.min((h - 78) / (maxRad * 1.12), (w - 80) / 380);
-  const cxCenter = w * 0.52;
+  const cxCenter = w * (mode === 'tire' ? 0.5 : 0.52);
 
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
@@ -574,53 +677,74 @@ function drawEvidenceCanvas(ev) {
 
   ctx.fillStyle = '#475569';
   ctx.font = '600 11px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('← 車体側 (ブレーキ/サス)', 12, 18);
-  ctx.textAlign = 'right';
-  ctx.fillText('フェンダー側 (外側) →', w - 12, 18);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#0f172a';
-  ctx.fillText('ハブ面 (0mm)', cxCenter, h - 10);
+  if (mode === 'tire') {
+    ctx.textAlign = 'center';
+    ctx.fillText('中心線比較 (ホイール共通想定)', cxCenter, 18);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillText('タイヤ断面中心', cxCenter, h - 10);
+  } else {
+    ctx.textAlign = 'left';
+    ctx.fillText('← 車体側 (ブレーキ/サス)', 12, 18);
+    ctx.textAlign = 'right';
+    ctx.fillText('フェンダー側 (外側) →', w - 12, 18);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0f172a';
+    ctx.fillText('ハブ面 (0mm)', cxCenter, h - 10);
 
-  ctx.fillStyle = 'rgba(148, 163, 184, 0.30)';
-  ctx.fillRect(cxCenter - 32 * scale, cyAxis - 145 * scale, 22 * scale, 145 * scale);
-  ctx.fillStyle = 'rgba(220, 38, 38, 0.45)';
-  ctx.fillRect(cxCenter - 42 * scale, cyAxis - 150 * scale, 34 * scale, 52 * scale);
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.30)';
+    ctx.fillRect(cxCenter - 32 * scale, cyAxis - 145 * scale, 22 * scale, 145 * scale);
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.45)';
+    ctx.fillRect(cxCenter - 42 * scale, cyAxis - 150 * scale, 34 * scale, 52 * scale);
 
-  // Inner & Outer Clearance Limit Lines (Inner from bm, Outer from mx or bm)
-  const outAnchor = mx || bm;
-  const baseInEdge = Math.min(bm.innerRimX, bm.innerTireX);
-  const baseOutEdge = Math.max(outAnchor.outerRimX, outAnchor.outerTireX);
-  const inLimitX = cxCenter + (baseInEdge - ev.inMargin) * scale;
-  const outLimitX = cxCenter + (baseOutEdge + ev.outMargin) * scale;
+    // Inner & Outer Clearance Limit Lines
+    const outAnchor = mx || bm;
+    const baseInEdge = mode === 'wheel' ? bm.innerRimX : Math.min(bm.innerRimX, bm.innerTireX);
+    const baseOutEdge = mode === 'wheel' ? outAnchor.outerRimX : Math.max(outAnchor.outerRimX, outAnchor.outerTireX);
+    const inLimitX = cxCenter + (baseInEdge - ev.inMargin) * scale;
+    const outLimitX = cxCenter + (baseOutEdge + ev.outMargin) * scale;
 
-  ctx.save();
-  ctx.setLineDash([6, 4]);
-  ctx.lineWidth = 2;
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 2;
 
-  ctx.strokeStyle = '#ea580c';
-  ctx.beginPath();
-  ctx.moveTo(inLimitX, 28);
-  ctx.lineTo(inLimitX, cyAxis);
-  ctx.stroke();
-  ctx.fillStyle = '#ea580c';
-  ctx.font = '700 10px sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillText(`イン限界(-${ev.inMargin})`, Math.max(84, inLimitX - 4), 38);
-  ctx.fillText(`残 ${fmt(ev.inRemain)}`, Math.max(84, inLimitX - 4), 51);
+    ctx.strokeStyle = '#ea580c';
+    ctx.beginPath();
+    ctx.moveTo(inLimitX, 28);
+    ctx.lineTo(inLimitX, cyAxis);
+    ctx.stroke();
+    ctx.fillStyle = '#ea580c';
+    ctx.font = '700 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`イン限界(-${ev.inMargin})`, Math.max(84, inLimitX - 4), 38);
+    ctx.fillText(`残 ${fmt(ev.inRemain)}`, Math.max(84, inLimitX - 4), 51);
 
-  ctx.strokeStyle = '#0284c7';
-  ctx.beginPath();
-  ctx.moveTo(outLimitX, 28);
-  ctx.lineTo(outLimitX, cyAxis);
-  ctx.stroke();
-  ctx.fillStyle = '#0284c7';
-  ctx.textAlign = 'left';
-  ctx.fillText(`アウト限界(+${ev.outMargin})`, Math.min(w - 94, outLimitX + 4), 38);
-  ctx.fillText(`残 ${fmt(ev.outRemain)}`, Math.min(w - 94, outLimitX + 4), 51);
-  ctx.restore();
+    ctx.strokeStyle = '#0284c7';
+    ctx.beginPath();
+    ctx.moveTo(outLimitX, 28);
+    ctx.lineTo(outLimitX, cyAxis);
+    ctx.stroke();
+    ctx.fillStyle = '#0284c7';
+    ctx.textAlign = 'left';
+    ctx.fillText(`アウト限界(+${ev.outMargin})`, Math.min(w - 94, outLimitX + 4), 38);
+    ctx.fillText(`残 ${fmt(ev.outRemain)}`, Math.min(w - 94, outLimitX + 4), 51);
+    ctx.restore();
+  }
 
-  const drawWheelTireProfile = (m, strokeColor, fillColor, dashed, lineWidth) => {
+  const normalizeCentered = (m) => {
+    const stdRimW = calcRimRange(m.width, m.aspect).stdJ * INCH_MM;
+    const actSecW = m.width + (stdRimW - m.width * 0.72) * 0.4;
+    return {
+      ...m,
+      centerX: 0,
+      rimWidth: stdRimW,
+      innerRimX: -stdRimW / 2,
+      outerRimX: stdRimW / 2,
+      actualSectionWidth: actSecW
+    };
+  };
+
+  const drawWheelTireProfile = (rawM, strokeColor, fillColor, dashed, lineWidth) => {
+    const m = mode === 'tire' ? normalizeCentered(rawM) : rawM;
     ctx.save();
     ctx.translate(cxCenter, cyAxis);
     if (dashed) ctx.setLineDash([5, 4]);
@@ -637,24 +761,33 @@ function drawEvidenceCanvas(ev) {
     if (!dashed) ctx.fill();
     ctx.stroke();
 
-    const cx = m.centerX * scale;
-    const rimHalf = (m.rimWidth / 2) * scale;
-    const bulgeHalf = (m.actualSectionWidth / 2) * scale;
-    const treadHalf = ((m.actualSectionWidth * 0.86) / 2) * scale;
-    const rBead = m.rimRad * scale;
-    const rMid = (m.rimRad + m.sidewallH * 0.52) * scale;
-    const rTop = m.tireRad * scale;
+    if (mode === 'wheel') {
+      // ハブ取付面からディスク面ラインを描画
+      ctx.beginPath();
+      ctx.moveTo(0, -rIn * 0.15);
+      ctx.lineTo(0, -rOut * 0.92);
+      ctx.lineTo(xOut - 4, -rOut * 0.92);
+      ctx.stroke();
+    } else {
+      const cx = m.centerX * scale;
+      const rimHalf = (m.rimWidth / 2) * scale;
+      const bulgeHalf = (m.actualSectionWidth / 2) * scale;
+      const treadHalf = ((m.actualSectionWidth * 0.86) / 2) * scale;
+      const rBead = m.rimRad * scale;
+      const rMid = (m.rimRad + m.sidewallH * 0.52) * scale;
+      const rTop = m.tireRad * scale;
 
-    ctx.beginPath();
-    ctx.moveTo(cx - rimHalf, -rBead);
-    ctx.lineTo(cx - bulgeHalf, -rMid);
-    ctx.lineTo(cx - treadHalf, -rTop);
-    ctx.lineTo(cx + treadHalf, -rTop);
-    ctx.lineTo(cx + bulgeHalf, -rMid);
-    ctx.lineTo(cx + rimHalf, -rBead);
-    ctx.closePath();
-    if (!dashed) ctx.fill();
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - rimHalf, -rBead);
+      ctx.lineTo(cx - bulgeHalf, -rMid);
+      ctx.lineTo(cx - treadHalf, -rTop);
+      ctx.lineTo(cx + treadHalf, -rTop);
+      ctx.lineTo(cx + bulgeHalf, -rMid);
+      ctx.lineTo(cx + rimHalf, -rBead);
+      ctx.closePath();
+      if (!dashed) ctx.fill();
+      ctx.stroke();
+    }
 
     ctx.restore();
   };
@@ -667,15 +800,30 @@ function drawEvidenceCanvas(ev) {
 
   ctx.fillStyle = tgtColor;
   ctx.font = '700 11px sans-serif';
-  ctx.textAlign = 'center';
-  const topY = cyAxis - tm.tireRad * scale - 10;
-  ctx.fillText(`外径差 ${fmt(ev.diaDiff)} (${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%)`, cxCenter + tm.centerX * scale, Math.max(36, topY));
-
-  ctx.textAlign = 'left';
-  ctx.fillText(`外リム ${fmt(ev.outerRimDiff)}`, cxCenter + tm.outerRimX * scale + 6, cyAxis - tm.rimRad * scale * 0.5);
-
-  ctx.textAlign = 'right';
-  ctx.fillText(`内リム ${fmt(ev.innerRimDiff)}`, cxCenter + tm.innerRimX * scale - 6, cyAxis - tm.rimRad * scale * 0.5);
+  if (mode === 'tire') {
+    const tmVis = normalizeCentered(tm);
+    ctx.textAlign = 'center';
+    const topY = cyAxis - tm.tireRad * scale - 10;
+    ctx.fillText(`外径差 ${fmt(ev.diaDiff)} (${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%)`, cxCenter, Math.max(36, topY));
+    ctx.textAlign = 'left';
+    ctx.fillText(`幅 ${bm.width}→${tm.width}mm (${fmt(tm.width - bm.width)})`, cxCenter + (tmVis.actualSectionWidth / 2) * scale + 8, cyAxis - (tm.rimRad + tm.sidewallH * 0.55) * scale);
+  } else if (mode === 'wheel') {
+    ctx.textAlign = 'center';
+    const topY = cyAxis - tm.rimRad * scale - 10;
+    ctx.fillText(`リム径 ${bm.inch}"→${tm.inch}" (R${fmt(ev.rimRadDiff)})`, cxCenter + tm.centerX * scale, Math.max(36, topY));
+    ctx.textAlign = 'left';
+    ctx.fillText(`外リム ${fmt(ev.outerRimDiff)}`, cxCenter + tm.outerRimX * scale + 6, cyAxis - tm.rimRad * scale * 0.5);
+    ctx.textAlign = 'right';
+    ctx.fillText(`内リム ${fmt(ev.innerRimDiff)}`, cxCenter + tm.innerRimX * scale - 6, cyAxis - tm.rimRad * scale * 0.5);
+  } else {
+    ctx.textAlign = 'center';
+    const topY = cyAxis - tm.tireRad * scale - 10;
+    ctx.fillText(`外径差 ${fmt(ev.diaDiff)} (${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%)`, cxCenter + tm.centerX * scale, Math.max(36, topY));
+    ctx.textAlign = 'left';
+    ctx.fillText(`外リム ${fmt(ev.outerRimDiff)}`, cxCenter + tm.outerRimX * scale + 6, cyAxis - tm.rimRad * scale * 0.5);
+    ctx.textAlign = 'right';
+    ctx.fillText(`内リム ${fmt(ev.innerRimDiff)}`, cxCenter + tm.innerRimX * scale - 6, cyAxis - tm.rimRad * scale * 0.5);
+  }
 }
 
 // --- Input Sync ---
@@ -737,6 +885,13 @@ bindNum('mx_aspect', state.max, 'aspect');
 bindNum('mx_inch', state.max, 'inch');
 bindNum('mx_j', state.max, 'j');
 bindNum('mx_et', state.max, 'et');
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.mode = btn.dataset.mode;
+    syncInputs();
+  });
+});
 
 document.getElementById('useMaxToggle').addEventListener('change', (e) => {
   state.useMax = e.target.checked;
@@ -821,6 +976,18 @@ function parseSpecText(rawStr, targetObj) {
     }
   }
 
+  if (!sizeParsed) {
+    const spaceWheel = s.match(/(?:^|[^\d.])(1\d|2[0-4])\s+(\d{1,2}(?:\.\d+)?)\s*(?:JJ?|B)(?=$|[^\d])/);
+    if (spaceWheel) {
+      const jVal = Number(spaceWheel[2]);
+      if (jVal >= 3.5 && jVal <= 14) {
+        targetObj.inch = Number(spaceWheel[1]);
+        targetObj.j = jVal;
+        s = s.replace(spaceWheel[0], ' ');
+      }
+    }
+  }
+
   const jMatch = s.match(/(?:^|[^\d.])(\d{1,2}(?:\.\d+)?)\s*(?:JJ?|B)(?=$|[^\d])|(?:リム幅)\s*[:=]?\s*(\d{1,2}(?:\.\d+)?)/);
   if (jMatch) {
     const jVal = Number(jMatch[1] || jMatch[2]);
@@ -881,6 +1048,7 @@ bindQuickParse('targetQuick', 'targetQuickBtn', state.target);
 document.getElementById('shareUrlBtn').addEventListener('click', async () => {
   const url = new URL(window.location.href);
   const b = state.base, t = state.target, mx = state.max;
+  url.searchParams.set('m', state.mode);
   url.searchParams.set('b', `${b.width},${b.aspect},${b.inch},${b.j},${b.et},${b.inMargin},${b.outMargin}`);
   url.searchParams.set('t', `${t.width},${t.aspect},${t.inch},${t.j},${t.et},${t.spacer}`);
   url.searchParams.set('um', state.useMax ? '1' : '0');
@@ -897,6 +1065,10 @@ document.getElementById('shareUrlBtn').addEventListener('click', async () => {
 
 function loadFromUrl() {
   const p = new URLSearchParams(window.location.search);
+  if (p.has('m')) {
+    const mVal = p.get('m');
+    if (mVal === 'both' || mVal === 'tire' || mVal === 'wheel') state.mode = mVal;
+  }
   if (p.has('b')) {
     const a = p.get('b').split(',');
     if (a.length >= 5) {
@@ -949,7 +1121,7 @@ function wrapTextLines(c, text, maxWidth) {
 
 function exportEvidenceSheetPng() {
   const ev = window.__lastEvidence || evaluateEvidence();
-  const { tm, bm } = ev;
+  const { tm, bm, mode } = ev;
 
   const sheet = document.createElement('canvas');
   sheet.width = 1200;
@@ -963,6 +1135,11 @@ function exportEvidenceSheetPng() {
     ok: { bg: '#ecfdf5', bd: '#10b981', tx: '#065f46', tag: '適合・安全圏' },
     warn: { bg: '#fffbeb', bd: '#f59e0b', tx: '#92400e', tag: 'マッチング外・条件付きOK' },
     ng: { bg: '#fef2f2', bd: '#ef4444', tx: '#991b1b', tag: '装着不可 / 非推奨' }
+  };
+  const modeLabelMap = {
+    both: 'タイヤ＋ホイール比較',
+    tire: 'タイヤのみ比較',
+    wheel: 'ホイールのみ比較'
   };
   const st = statusMap[ev.overall];
   sc.fillStyle = st.bg;
@@ -981,7 +1158,7 @@ function exportEvidenceSheetPng() {
   sc.textAlign = 'left';
   sc.fillStyle = st.tx;
   sc.font = 'bold 20px sans-serif';
-  sc.fillText('タイヤ・ホイール適合エビデンス診断シート', 250, 56);
+  sc.fillText(`タイヤ・ホイール適合エビデンス診断シート [${modeLabelMap[mode] || modeLabelMap.both}]`, 250, 56);
 
   sc.fillStyle = '#475569';
   sc.font = '13px sans-serif';
@@ -995,9 +1172,19 @@ function exportEvidenceSheetPng() {
 
   sc.fillStyle = '#1e293b';
   sc.font = 'bold 15px sans-serif';
-  sc.fillText(`① 最小基準: ${bm.width}/${bm.aspect}R${bm.inch} (${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}) [自動LI STD:${ev.baseLoad.stdLi}/XL:${ev.baseLoad.xlLi} / 余裕 内${ev.inMargin}・外${ev.outMargin}mm]` + (ev.mx ? `  |  最大枠: ${ev.mx.width}/${ev.mx.aspect}R${ev.mx.inch} (${ev.mx.j.toFixed(1)}J +${ev.mx.et})` : ''), 40, 136);
-  sc.fillStyle = '#1d4ed8';
-  sc.fillText(`② 検討中  : ${tm.width}/${tm.aspect}R${tm.inch} (${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}) [自動LI STD:${ev.tgtLoad.stdLi}/XL:${ev.tgtLoad.xlLi}]`, 40, 159);
+  if (mode === 'tire') {
+    sc.fillText(`① 最小基準: ${bm.width}/${bm.aspect}R${bm.inch} [自動LI STD:${ev.baseLoad.stdLi}/XL:${ev.baseLoad.xlLi}]` + (ev.mx ? `  |  最大枠: ${ev.mx.width}/${ev.mx.aspect}R${ev.mx.inch}` : ''), 40, 136);
+    sc.fillStyle = '#1d4ed8';
+    sc.fillText(`② 検討中  : ${tm.width}/${tm.aspect}R${tm.inch} [自動LI STD:${ev.tgtLoad.stdLi}/XL:${ev.tgtLoad.xlLi}]`, 40, 159);
+  } else if (mode === 'wheel') {
+    sc.fillText(`① 最小基準: ${bm.inch}×${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et} [余裕 内${ev.inMargin}・外${ev.outMargin}mm]` + (ev.mx ? `  |  最大枠: ${ev.mx.inch}×${ev.mx.j.toFixed(1)}J +${ev.mx.et}` : ''), 40, 136);
+    sc.fillStyle = '#1d4ed8';
+    sc.fillText(`② 検討中  : ${tm.inch}×${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}` + (tm.spacer > 0 ? ` (スペーサー ${tm.spacer}mm含)` : ''), 40, 159);
+  } else {
+    sc.fillText(`① 最小基準: ${bm.width}/${bm.aspect}R${bm.inch} (${bm.j.toFixed(1)}J ${bm.et >= 0 ? '+' : ''}${bm.et}) [自動LI STD:${ev.baseLoad.stdLi}/XL:${ev.baseLoad.xlLi} / 余裕 内${ev.inMargin}・外${ev.outMargin}mm]` + (ev.mx ? `  |  最大枠: ${ev.mx.width}/${ev.mx.aspect}R${ev.mx.inch} (${ev.mx.j.toFixed(1)}J +${ev.mx.et})` : ''), 40, 136);
+    sc.fillStyle = '#1d4ed8';
+    sc.fillText(`② 検討中  : ${tm.width}/${tm.aspect}R${tm.inch} (${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}) [自動LI STD:${ev.tgtLoad.stdLi}/XL:${ev.tgtLoad.xlLi}]`, 40, 159);
+  }
 
   sc.strokeStyle = '#cbd5e1';
   sc.strokeRect(24, 186, 560, 420);
@@ -1017,28 +1204,50 @@ function exportEvidenceSheetPng() {
     sc.fillText(ln, 38, 664 + idx * 18);
   });
 
-  const rightCards = [
-    {
-      title: `1. 外径・メーター検査 (${ev.diaText})`,
-      level: ev.diaLevel,
-      text: `現在 ${bm.tireDia.toFixed(0)}mm → 検討 ${tm.tireDia.toFixed(0)}mm (差 ${fmt(ev.diaDiff)} / ${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%) | メーター40km/h時実測 ${ev.actualSpeedAt40.toFixed(1)}km/h (車検30.9〜42.5) | 車高 ${fmt(ev.groundClearanceDiff)}`
-    },
-    {
-      title: `2. 耐荷重・空気圧 (${ev.loadText})`,
-      level: ev.loadLevel,
-      text: `必要耐荷重 ${ev.reqKg}kg/本 → 検討 STD LI${ev.tgtLoad.stdLi}(${ev.tgtStdAt240}kg) / XL LI${ev.tgtLoad.xlLi}(最大${ev.tgtXlAt290}kg)` + (ev.loadLevel === 'warn' ? ` → XL+${ev.recommendedKpa}kPa昇圧でOK` : '')
-    },
-    {
-      title: `3. リム幅 JATMA (${ev.rimText})`,
-      level: ev.rimLevel,
-      text: `タイヤ幅 ${tm.width}mm 適用レンジ ${ev.rimRange.minJ.toFixed(1)}J〜${ev.rimRange.maxJ.toFixed(1)}J に対し、検討ホイール ${tm.j.toFixed(1)}J`
-    },
-    {
-      title: `4. 基準比クリアランス (${ev.clearText})`,
-      level: ev.clearLevel,
-      text: `イン余裕${ev.inMargin}mm→残 ${fmt(ev.inRemain)} (内リム ${fmt(ev.innerRimDiff)} / 径R ${fmt(ev.rimRadDiff)}) | アウト余裕${ev.outMargin}mm→残 ${fmt(ev.outRemain)} (外リム ${fmt(ev.outerRimDiff)} / 外タイヤ ${fmt(ev.outerTireDiff)})`
-    }
-  ];
+  const diaCard = {
+    title: `1. 外径・メーター検査 (${ev.diaText})`,
+    level: ev.diaLevel,
+    text: `現在 ${bm.tireDia.toFixed(0)}mm → 検討 ${tm.tireDia.toFixed(0)}mm (差 ${fmt(ev.diaDiff)} / ${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%) | メーター40km/h時実測 ${ev.actualSpeedAt40.toFixed(1)}km/h (車検30.9〜42.5) | 車高 ${fmt(ev.groundClearanceDiff)}`
+  };
+  const loadCard = {
+    title: `2. 耐荷重・空気圧 (${ev.loadText})`,
+    level: ev.loadLevel,
+    text: `必要耐荷重 ${ev.reqKg}kg/本 → 検討 STD LI${ev.tgtLoad.stdLi}(${ev.tgtStdAt240}kg) / XL LI${ev.tgtLoad.xlLi}(最大${ev.tgtXlAt290}kg)` + (ev.loadLevel === 'warn' ? ` → XL+${ev.recommendedKpa}kPa昇圧でOK` : '')
+  };
+  const rimCard = mode === 'wheel'
+    ? {
+        title: `3. リム幅・推奨タイヤ幅 (${ev.rimText})`,
+        level: ev.rimLevel,
+        text: `基準 ${bm.j.toFixed(1)}J → 検討 ${tm.j.toFixed(1)}J (差 ${fmt((tm.j - bm.j) * INCH_MM)}) | 推奨組み合わせタイヤ幅 ${ev.tireRangeForRim.minW}〜${ev.tireRangeForRim.maxW}mm (標準 ${ev.tireRangeForRim.stdW}mm)`
+      }
+    : mode === 'tire'
+      ? {
+          title: `3. 適用リム幅レンジ (${ev.rimText})`,
+          level: ev.rimLevel,
+          text: `タイヤ幅 ${tm.width}mm JATMA適用 ${ev.rimRange.minJ.toFixed(1)}J〜${ev.rimRange.maxJ.toFixed(1)}J (標準 ${ev.rimRange.stdJ.toFixed(1)}J) | 純正タイヤ標準リム幅目安 ${ev.baseStdJ.toFixed(1)}J前後`
+        }
+      : {
+          title: `3. リム幅 JATMA (${ev.rimText})`,
+          level: ev.rimLevel,
+          text: `タイヤ幅 ${tm.width}mm 適用レンジ ${ev.rimRange.minJ.toFixed(1)}J〜${ev.rimRange.maxJ.toFixed(1)}J に対し、検討ホイール ${tm.j.toFixed(1)}J`
+        };
+  const clearCard = mode === 'wheel'
+    ? {
+        title: `4. 基準比クリアランス (${ev.clearText})`,
+        level: ev.clearLevel,
+        text: `イン余裕${ev.inMargin}mm→残 ${fmt(ev.inRemain)} (内リム ${fmt(ev.innerRimDiff)} / 径R ${fmt(ev.rimRadDiff)}) | アウト余裕${ev.outMargin}mm→残 ${fmt(ev.outRemain)} (外リム ${fmt(ev.outerRimDiff)})`
+      }
+    : {
+        title: `4. 基準比クリアランス (${ev.clearText})`,
+        level: ev.clearLevel,
+        text: `イン余裕${ev.inMargin}mm→残 ${fmt(ev.inRemain)} (内リム ${fmt(ev.innerRimDiff)} / 径R ${fmt(ev.rimRadDiff)}) | アウト余裕${ev.outMargin}mm→残 ${fmt(ev.outRemain)} (外リム ${fmt(ev.outerRimDiff)} / 外タイヤ ${fmt(ev.outerTireDiff)})`
+      };
+
+  const rightCards = mode === 'tire'
+    ? [diaCard, loadCard, rimCard]
+    : mode === 'wheel'
+      ? [rimCard, clearCard]
+      : [diaCard, loadCard, rimCard, clearCard];
 
   let ry = 186;
   rightCards.forEach(card => {
@@ -1068,7 +1277,11 @@ function exportEvidenceSheetPng() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `fitment_${tm.width}-${tm.aspect}R${tm.inch}_${tm.j}J_ET${tm.effEt}.png`;
+    a.download = mode === 'tire'
+      ? `fitment_tire_${tm.width}-${tm.aspect}R${tm.inch}.png`
+      : mode === 'wheel'
+        ? `fitment_wheel_${tm.inch}x${tm.j}J_ET${tm.effEt}.png`
+        : `fitment_${tm.width}-${tm.aspect}R${tm.inch}_${tm.j}J_ET${tm.effEt}.png`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, 'image/png');
