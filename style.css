@@ -262,6 +262,10 @@ select:focus, input[type="text"]:focus {
   grid-column: span 2;
 }
 
+.col-span-4 {
+  grid-column: span 4;
+}
+
 .check-box {
   justify-content: flex-end;
 }
@@ -477,6 +481,89 @@ select:focus, input[type="text"]:focus {
   font-size: 10px;
   color: var(--muted);
   font-weight: 500;
+}
+
+.spec-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 5px 0 6px;
+}
+
+.spec-chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.trap-list {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  font-size: 11px;
+  color: #1e293b;
+}
+
+.trap-list li {
+  margin-bottom: 3px;
+}
+
+.aruaru-dict {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aruaru-dict input {
+  width: 100%;
+  font-size: 11px;
+}
+
+.aruaru-results {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.aruaru-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+.aruaru-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.aruaru-apply-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.aruaru-apply-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
 }
 
 .toast {
