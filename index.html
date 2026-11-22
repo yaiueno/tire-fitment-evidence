@@ -3,8 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>タイヤ・ホイール適合エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=9" />
+  <title>タイヤ・ホイール適合エビデンス診断｜外径・ロードインデックス・空気圧・出面計算</title>
+  <meta name="description" content="タイヤ・ホイールのインチアップやサイズ変更時の外径差・スピードメーター車検誤差・ロードインデックス(STD/XL)・必要空気圧・JATMA適用リム幅・フェンダー/サス側クリアランスを2D断面図で即座に計算・比較できる無料診断ツール。" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://yaiueno.github.io/tire-fitment-evidence/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="タイヤ・ホイール適合エビデンス診断｜外径・LI・空気圧・出面計算" />
+  <meta property="og:description" content="サイズを入力するだけでタイヤ外径差・車検基準・STD/XLロードインデックス・必要空気圧・クリアランスを2D断面図で診断。安価な定番代替サイズ候補も自動提示。" />
+  <meta property="og:url" content="https://yaiueno.github.io/tire-fitment-evidence/" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "タイヤ・ホイール適合エビデンス診断",
+    "url": "https://yaiueno.github.io/tire-fitment-evidence/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "description": "タイヤ外径、車検メーター誤差、ロードインデックス(STD/XL)と必要空気圧、JATMA適用リム幅、ホイール出面クリアランスを2D断面図で比較計算する無料ツール。"
+  }
+  </script>
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
   <header class="topbar">
@@ -173,9 +191,28 @@
         </div>
       </div>
     </section>
+
+    <!-- SEO・計算根拠解説ガイド -->
+    <section class="seo-guide" aria-label="適合計算の基準とよくある質問">
+      <h2>タイヤ・ホイール適合計算の基準と使い方</h2>
+      <div class="seo-grid">
+        <article class="seo-card">
+          <h3>外径差とスピードメーター車検基準</h3>
+          <p>インチアップや扁平率変更では、メーター40km/h表示時の実速度が平成19年以降の保安基準（30.9〜42.5km/h）内に収まることが必須です。実務上は純正外径比 -3%〜+2% 以内が車高変化やインナー干渉を避けやすい安全圏です。</p>
+        </article>
+        <article class="seo-card">
+          <h3>ロードインデックス (STD/XL) 自動算出と空気圧</h3>
+          <p>タイヤサイズから ISO 4000-1 / JATMA 規格に基づく標準（STD: 最大240kPa）およびエクストラロード（XL: 最大290kPa）のロードインデックスを自動算出。外径同等でも低扁平化で耐荷重が下がる場合、XL規格への変更と必要な昇圧kPaを自動計算します。</p>
+        </article>
+        <article class="seo-card">
+          <h3>定番サイズへの変更・クリアランス確認</h3>
+          <p>特殊・マイナーサイズから流通量の多い定番サイズ（155/65R14、195/65R15、205/55R16、215/45R17、225/40R18 など）へ変更する際の JATMA 適用リム幅レンジ、サスペンション側（イン側）・フェンダー側（アウト側）の出面変化を2D断面図で確認できます。</p>
+        </article>
+      </div>
+    </section>
   </main>
 
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script defer src="app.js?v=9"></script>
+  <script defer src="app.js?v=10"></script>
 </body>
 </html>

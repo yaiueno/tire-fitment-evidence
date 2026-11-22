@@ -1,29 +1,37 @@
 const INCH_MM = 25.4;
 
-// アフィリエイト設定（IDを設定すると自動で成果リンクに変換されます）
-const AFFILIATE_CONFIG = {
-  rakutenId: '',
-  amazonTag: '',
-  yahooSid: '',
-  yahooPid: ''
+// 公式ツール（楽天「URLからリンクを作成」/ もしも「どこでもリンク」等）で事前生成した無改変リンク辞書
+// 規約順守のため、URLをJSで動的改変せず登録済みの公式リンクをそのまま使用する（未登録時は通常検索URLへフォールバック）
+const STATIC_AFFILIATE_MAP = {
+  '155/65R14': { rakuten: '', amazon: '', yahoo: '' },
+  '165/55R15': { rakuten: '', amazon: '', yahoo: '' },
+  '165/65R14': { rakuten: '', amazon: '', yahoo: '' },
+  '175/65R14': { rakuten: '', amazon: '', yahoo: '' },
+  '175/65R15': { rakuten: '', amazon: '', yahoo: '' },
+  '185/60R15': { rakuten: '', amazon: '', yahoo: '' },
+  '185/65R15': { rakuten: '', amazon: '', yahoo: '' },
+  '195/65R15': { rakuten: '', amazon: '', yahoo: '' },
+  '195/60R16': { rakuten: '', amazon: '', yahoo: '' },
+  '205/55R16': { rakuten: '', amazon: '', yahoo: '' },
+  '205/60R16': { rakuten: '', amazon: '', yahoo: '' },
+  '215/45R17': { rakuten: '', amazon: '', yahoo: '' },
+  '215/50R17': { rakuten: '', amazon: '', yahoo: '' },
+  '215/55R17': { rakuten: '', amazon: '', yahoo: '' },
+  '215/60R16': { rakuten: '', amazon: '', yahoo: '' },
+  '225/40R18': { rakuten: '', amazon: '', yahoo: '' },
+  '225/45R18': { rakuten: '', amazon: '', yahoo: '' },
+  '225/65R17': { rakuten: '', amazon: '', yahoo: '' },
+  nut_taper: { rakuten: '', amazon: '', yahoo: '' },
+  spacer: { rakuten: '', amazon: '', yahoo: '' }
 };
 
-function buildShopUrls(keyword) {
+function buildShopUrls(keyword, mapKey = '') {
   const q = encodeURIComponent(keyword);
-  const rawRakuten = `https://search.rakuten.co.jp/search/mall/${q}/`;
-  const rawAmazon = `https://www.amazon.co.jp/s?k=${q}`;
-  const rawYahoo = `https://shopping.yahoo.co.jp/search?p=${q}`;
-
+  const entry = (mapKey && STATIC_AFFILIATE_MAP[mapKey]) || {};
   return {
-    rakuten: AFFILIATE_CONFIG.rakutenId
-      ? `https://hb.afl.rakuten.co.jp/hgc/${AFFILIATE_CONFIG.rakutenId}/?pc=${encodeURIComponent(rawRakuten)}`
-      : rawRakuten,
-    amazon: AFFILIATE_CONFIG.amazonTag
-      ? `${rawAmazon}&tag=${encodeURIComponent(AFFILIATE_CONFIG.amazonTag)}`
-      : rawAmazon,
-    yahoo: AFFILIATE_CONFIG.yahooSid && AFFILIATE_CONFIG.yahooPid
-      ? `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${encodeURIComponent(AFFILIATE_CONFIG.yahooSid)}&pid=${encodeURIComponent(AFFILIATE_CONFIG.yahooPid)}&vc_url=${encodeURIComponent(rawYahoo)}`
-      : rawYahoo
+    rakuten: entry.rakuten || `https://search.rakuten.co.jp/search/mall/${q}/`,
+    amazon: entry.amazon || `https://www.amazon.co.jp/s?k=${q}`,
+    yahoo: entry.yahoo || `https://shopping.yahoo.co.jp/search?p=${q}`
   };
 }
 
@@ -598,19 +606,19 @@ function renderAffiliateLinks(ev) {
   const sizeStr = `${tm.width}/${tm.aspect}R${tm.inch}`;
   const items = mode === 'wheel'
     ? [
-        { label: `ホイール「${tm.inch}インチ ${tm.j}J」検索`, query: `${tm.inch}インチ ${tm.j}J アルミホイール` },
-        { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー` }
+        { label: `ホイール「${tm.inch}インチ ${tm.j}J」検索`, query: `${tm.inch}インチ ${tm.j}J アルミホイール`, key: `${tm.inch}x${tm.j}J` },
+        { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー`, key: 'nut_taper' }
       ]
     : [
-        { label: `タイヤ「${sizeStr}」価格比較`, query: `${sizeStr} サマータイヤ` },
-        { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー` }
+        { label: `タイヤ「${sizeStr}」価格比較`, query: `${sizeStr} サマータイヤ`, key: sizeStr },
+        { label: `社外用 60°テーパーナット`, query: `ホイールナット 60度 テーパー`, key: 'nut_taper' }
       ];
   if (mode !== 'tire' && (tm.spacer > 0 || ev.outerRimDiff < -5)) {
-    items.push({ label: `ホイールスペーサー (${tm.spacer || 5}mm等)`, query: `ホイールスペーサー ${tm.spacer || 5}mm` });
+    items.push({ label: `ホイールスペーサー (${tm.spacer || 5}mm等)`, query: `ホイールスペーサー ${tm.spacer || 5}mm`, key: 'spacer' });
   }
 
   document.getElementById('shopRows').innerHTML = items.map(it => {
-    const urls = buildShopUrls(it.query);
+    const urls = buildShopUrls(it.query, it.key);
     return `
       <div class="shop-row">
         <span class="shop-label">${it.label}</span>
