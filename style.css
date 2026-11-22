@@ -623,6 +623,212 @@ select:focus, input[type="text"]:focus {
 .shop-link.amazon { color: #b45309; border-color: rgba(180, 83, 9, 0.3); }
 .shop-link.yahoo { color: #be123c; border-color: rgba(190, 18, 60, 0.3); }
 
+.verdict-banner {
+  cursor: pointer;
+}
+
+.floating-alert-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+}
+
+.floating-alert-btn.level-ng { background: #dc2626; }
+.floating-alert-btn.level-warn { background: #d97706; }
+.floating-alert-btn.level-ok { background: #059669; }
+
+.alert-count-badge {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-dialog.status-ng { border-color: var(--ng-bd); }
+.modal-dialog.status-warn { border-color: var(--warn-bd); }
+.modal-dialog.status-ok { border-color: var(--ok-bd); }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-ng .modal-header { background: var(--ng-bg); color: var(--ng-tx); }
+.status-warn .modal-header { background: var(--warn-bg); color: var(--warn-tx); }
+.status-ok .modal-header { background: var(--ok-bg); color: var(--ok-tx); }
+
+.modal-title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--muted);
+}
+
+.status-ng .modal-badge { background: var(--ng-bd); }
+.status-warn .modal-badge { background: var(--warn-bd); }
+.status-ok .modal-badge { background: var(--ok-bd); }
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.modal-close-x {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.modal-body {
+  padding: 14px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-talk {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.modal-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: var(--surface);
+}
+
+.modal-traps-sec {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.modal-alt-sec {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.modal-sec-title {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 5px;
+  color: var(--ink);
+}
+
+.modal-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.modal-list li {
+  margin-bottom: 4px;
+}
+
+.modal-list li.item-ng {
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.modal-list li.item-warn {
+  color: #92400e;
+  font-weight: 600;
+}
+
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+.auto-pop-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.modal-footer-btns {
+  display: flex;
+  gap: 6px;
+}
+
 .toast {
   position: fixed;
   bottom: 20px;

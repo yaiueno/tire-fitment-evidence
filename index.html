@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>実車タイヤ・ホイール適合＆接客エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
   <header class="topbar">
@@ -243,7 +243,56 @@
     </section>
   </main>
 
+  <!-- 右下フローティング再表示ボタン -->
+  <button id="reopenAlertBtn" class="floating-alert-btn" type="button">
+    <span>⚠️ 警告・車種トラップを見る</span>
+    <span id="alertCountBadge" class="alert-count-badge">0</span>
+  </button>
+
+  <!-- 適合NG・車種トラップ ポップアップアラート -->
+  <div id="alertModal" class="modal-overlay" hidden aria-modal="true" role="dialog">
+    <div class="modal-dialog" id="alertDialog">
+      <div class="modal-header" id="modalHeader">
+        <div class="modal-title-wrap">
+          <span class="modal-badge" id="modalBadge">--</span>
+          <h3 id="modalTitle">適合・現場トラップアラート</h3>
+        </div>
+        <button id="modalCloseTopBtn" class="modal-close-x" type="button" aria-label="閉じる">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-talk" id="modalTalk"></div>
+
+        <div class="modal-section" id="modalFindingsSection">
+          <div class="modal-sec-title">🚨 今回の判定エビデンス（NG / 要確認項目）</div>
+          <ul class="modal-list" id="modalFindingsList"></ul>
+        </div>
+
+        <div class="modal-section modal-traps-sec">
+          <div class="modal-sec-title" id="modalTrapsTitle">⚠️ この車種の「現場あるある・固有トラップ」</div>
+          <ul class="modal-list" id="modalTrapsList"></ul>
+        </div>
+
+        <div class="modal-section modal-alt-sec" id="modalAltsWrap" hidden>
+          <div class="modal-sec-title">💡 代わりに安く適合しやすい定番代替サイズ（タップで即反映）</div>
+          <div class="alt-list" id="modalAltsList"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <label class="auto-pop-label">
+          <input type="checkbox" id="autoPopupToggle" checked />
+          <span>自動ポップアップ ON</span>
+        </label>
+        <div class="modal-footer-btns">
+          <button id="modalSavePngBtn" class="btn" type="button">診断画像(PNG)保存</button>
+          <button id="modalCloseBtn" class="btn btn-primary" type="button">確認して閉じる</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>

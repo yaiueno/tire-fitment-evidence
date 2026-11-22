@@ -889,6 +889,7 @@ function renderEvidence() {
   renderAlternatives(mn, tm);
   renderAffiliateLinks(ev);
   drawEvidenceCanvas(ev);
+  updateAlertModalContent(ev);
   window.__lastEvidence = ev;
 }
 
@@ -961,8 +962,8 @@ function setCard(cardId, pillId, level, text) {
   pill.textContent = text;
 }
 
-function renderAlternatives(mn, tm) {
-  const candidates = POPULAR_BUDGET_SIZES.map(sz => {
+function getAlternativeCandidates(mn, tm) {
+  return POPULAR_BUDGET_SIZES.map(sz => {
     const m = calcMetrics({ ...sz, j: tm.j, et: tm.et });
     const diffPct = ((m.tireDia - mn.tireDia) / mn.tireDia) * 100;
     const range = calcRimRange(sz.width, sz.aspect);
@@ -973,6 +974,20 @@ function renderAlternatives(mn, tm) {
     .filter(c => Math.abs(c.diffPct) <= 2.5 && c.inchOk)
     .sort((a, b) => (b.fitsRim - a.fitsRim) || (Math.abs(a.diffPct) - Math.abs(b.diffPct)))
     .slice(0, 6);
+}
+
+function applyAlternativeSize(c) {
+  state.target.width = c.width;
+  state.target.aspect = c.aspect;
+  state.target.inch = c.inch;
+  const liEst = estimateLI(c.width, c.aspect, c.inch);
+  state.target.li = liEst.li;
+  state.target.xl = liEst.xl;
+  syncInputs();
+}
+
+function renderAlternatives(mn, tm) {
+  const candidates = getAlternativeCandidates(mn, tm);
 
   const box = document.getElementById('altList');
   if (candidates.length === 0) {
@@ -988,16 +1003,7 @@ function renderAlternatives(mn, tm) {
   `).join('');
 
   box.querySelectorAll('.alt-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const c = candidates[Number(btn.dataset.altIdx)];
-      state.target.width = c.width;
-      state.target.aspect = c.aspect;
-      state.target.inch = c.inch;
-      const liEst = estimateLI(c.width, c.aspect, c.inch);
-      state.target.li = liEst.li;
-      state.target.xl = liEst.xl;
-      syncInputs();
-    });
+    btn.addEventListener('click', () => applyAlternativeSize(candidates[Number(btn.dataset.altIdx)]));
   });
 }
 
@@ -1146,6 +1152,7 @@ function applyPreset(key) {
   Object.assign(state.target, p.target);
   document.getElementById('presetSelect').value = key;
   syncInputs();
+  maybeAutoPopup(true);
 }
 
 function syncInputs() {
@@ -1201,6 +1208,10 @@ const bindNum = (id, groupObj, key, autoEstLi = false) => {
     }
     syncInputs();
   });
+  el.addEventListener('change', () => {
+    const ev = window.__lastEvidence || evaluateEvidence();
+    if (ev.overall === 'ng' || ev.overall === 'warn') maybeAutoPopup(false);
+  });
   el.addEventListener('blur', () => syncInputs());
 };
 
@@ -1227,13 +1238,14 @@ bindNum('mx_j', state.max, 'j');
 bindNum('mx_et', state.max, 'et');
 bindNum('mx_margin', state.max, 'margin');
 
-document.getElementById('t_xl').addEventListener('change', (e) => { state.target.xl = e.target.checked; renderEvidence(); });
-document.getElementById('mn_xl').addEventListener('change', (e) => { state.min.xl = e.target.checked; renderEvidence(); });
-document.getElementById('wheelOriginSelect').addEventListener('change', (e) => { state.wheelOrigin = e.target.value; renderEvidence(); });
+document.getElementById('t_xl').addEventListener('change', (e) => { state.target.xl = e.target.checked; renderEvidence(); maybeAutoPopup(false); });
+document.getElementById('mn_xl').addEventListener('change', (e) => { state.min.xl = e.target.checked; renderEvidence(); maybeAutoPopup(false); });
+document.getElementById('wheelOriginSelect').addEventListener('change', (e) => { state.wheelOrigin = e.target.value; renderEvidence(); maybeAutoPopup(true); });
 document.getElementById('makerSelect').addEventListener('change', (e) => {
   state.maker = e.target.value;
   state.presetKey = '';
   syncInputs();
+  maybeAutoPopup(true);
 });
 document.getElementById('aruaruSearch').addEventListener('input', () => renderAruaruDict());
 
@@ -1257,6 +1269,7 @@ function bindQuickParse(inputId, btnId, obj, hasLi) {
     const etm = str.match(/([+-]\d+)(?:\s|$)/);
     if (etm) obj.et = Number(etm[1]);
     syncInputs();
+    maybeAutoPopup(false);
   };
   document.getElementById(btnId).addEventListener('click', apply);
   document.getElementById(inputId).addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(); });
@@ -1491,6 +1504,105 @@ function exportEvidenceSheetPng() {
 }
 
 document.getElementById('saveSheetBtn').addEventListener('click', exportEvidenceSheetPng);
+document.getElementById('modalSavePngBtn').addEventListener('click', exportEvidenceSheetPng);
+
+// --- Popup Alert Modal Logic ---
+let autoPopupEnabled = true;
+
+function updateAlertModalContent(ev) {
+  const alertCount = ev.ngList.length + ev.warnList.length;
+  const totalBadge = alertCount + ev.vSpec.traps.length;
+
+  const reopenBtn = document.getElementById('reopenAlertBtn');
+  reopenBtn.className = `floating-alert-btn level-${ev.overall}`;
+  document.getElementById('alertCountBadge').textContent = String(totalBadge);
+
+  const dialog = document.getElementById('alertDialog');
+  dialog.className = `modal-dialog status-${ev.overall}`;
+
+  const badge = document.getElementById('modalBadge');
+  const title = document.getElementById('modalTitle');
+  const talk = document.getElementById('modalTalk');
+
+  if (ev.overall === 'ng') {
+    badge.textContent = '装着不可 / 危険';
+    title.textContent = '【警告】装着不可・危険エビデンスがあります';
+    talk.textContent = `💬 「${ev.tm.width}/${ev.tm.aspect}R${ev.tm.inch} (${ev.tm.j.toFixed(1)}J ${ev.tm.effEt >= 0 ? '+' : ''}${ev.tm.effEt})」は、安全基準・物理寸法に抵触するためおすすめできません。`;
+  } else if (ev.overall === 'warn') {
+    badge.textContent = '要注意・条件付きOK';
+    title.textContent = '【要注意】マッチング外・車種固有トラップ確認';
+    talk.textContent = `💬 「${ev.tm.width}/${ev.tm.aspect}R${ev.tm.inch}」はカタログ標準外ですが、下記条件（空気圧・ナット等）と車種トラップを確認すれば比較的装着できる圏内です。`;
+  } else {
+    badge.textContent = '適合・安全圏';
+    title.textContent = `【適合確認】安全圏（${ev.vSpec.name}）`;
+    talk.textContent = `💬 数値上の適合は安全圏です。下の車種固有の現場トラップ（ハブ径・ナット座面等）だけ念のためご確認ください。`;
+  }
+
+  const findingsList = document.getElementById('modalFindingsList');
+  const findingsSec = document.getElementById('modalFindingsSection');
+  const itemsHtml = [
+    ...ev.ngList.map(t => `<li class="item-ng">${t}</li>`),
+    ...ev.warnList.map(t => `<li class="item-warn">${t}</li>`)
+  ];
+  if (itemsHtml.length > 0) {
+    findingsSec.hidden = false;
+    findingsList.innerHTML = itemsHtml.join('');
+  } else {
+    findingsSec.hidden = false;
+    findingsList.innerHTML = ev.okList.map(t => `<li>${t}</li>`).join('');
+  }
+
+  document.getElementById('modalTrapsTitle').textContent = `⚠️ ${ev.vSpec.name} の「現場あるある・固有トラップ」`;
+  document.getElementById('modalTrapsList').innerHTML = ev.vSpec.traps.map(t => `<li>${t}</li>`).join('');
+
+  const altsWrap = document.getElementById('modalAltsWrap');
+  const altsList = document.getElementById('modalAltsList');
+  const candidates = getAlternativeCandidates(ev.mn, ev.tm);
+  if (ev.overall === 'ng' && candidates.length > 0) {
+    altsWrap.hidden = false;
+    altsList.innerHTML = candidates.map((c, i) => `
+      <button class="alt-btn" data-modal-alt="${i}">
+        <span>${c.width}/${c.aspect}R${c.inch} (${c.diffPct >= 0 ? '+' : ''}${c.diffPct.toFixed(1)}%)</span>
+        <small>${c.note}${c.fitsRim ? '・現J数適合' : '・J数注意'}</small>
+      </button>
+    `).join('');
+    altsList.querySelectorAll('[data-modal-alt]').forEach(btn => {
+      btn.addEventListener('click', () => applyAlternativeSize(candidates[Number(btn.dataset.modalAlt)]));
+    });
+  } else {
+    altsWrap.hidden = true;
+  }
+}
+
+function openAlertModal() {
+  document.getElementById('alertModal').hidden = false;
+}
+
+function closeAlertModal() {
+  document.getElementById('alertModal').hidden = true;
+}
+
+function maybeAutoPopup(forceOnPresetOrOrigin = false) {
+  if (!autoPopupEnabled) return;
+  const ev = window.__lastEvidence || evaluateEvidence();
+  if (forceOnPresetOrOrigin || ev.overall === 'ng' || ev.overall === 'warn') {
+    openAlertModal();
+  }
+}
+
+document.getElementById('autoPopupToggle').addEventListener('change', (e) => {
+  autoPopupEnabled = e.target.checked;
+});
+document.getElementById('reopenAlertBtn').addEventListener('click', openAlertModal);
+document.getElementById('verdictBanner').addEventListener('click', openAlertModal);
+document.getElementById('modalCloseBtn').addEventListener('click', closeAlertModal);
+document.getElementById('modalCloseTopBtn').addEventListener('click', closeAlertModal);
+document.getElementById('alertModal').addEventListener('click', (e) => {
+  if (e.target.id === 'alertModal') closeAlertModal();
+});
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !document.getElementById('alertModal').hidden) closeAlertModal();
+});
 
 loadFromUrl();
 syncInputs();
