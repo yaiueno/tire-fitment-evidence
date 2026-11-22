@@ -103,6 +103,12 @@ select:focus, input[type="text"]:focus {
 
 .btn:hover { border-color: var(--ink); }
 
+.btn-primary {
+  background: var(--blue);
+  color: #ffffff;
+  border-color: var(--blue);
+}
+
 .btn-outline {
   background: var(--ink);
   color: #ffffff;
@@ -565,6 +571,57 @@ select:focus, input[type="text"]:focus {
   border-color: var(--blue);
   color: var(--blue);
 }
+
+.ev-card.ev-shop {
+  border-left-color: #0284c7;
+}
+
+.shop-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.shop-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+.shop-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.shop-links {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.shop-link {
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.shop-link:hover { border-color: var(--ink); }
+.shop-link.rakuten { color: #bf0000; border-color: rgba(191, 0, 0, 0.3); }
+.shop-link.amazon { color: #b45309; border-color: rgba(180, 83, 9, 0.3); }
+.shop-link.yahoo { color: #be123c; border-color: rgba(190, 18, 60, 0.3); }
 
 .toast {
   position: fixed;

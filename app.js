@@ -1,5 +1,32 @@
 const INCH_MM = 25.4;
 
+// アフィリエイト設定（ご自身のID・タグを設定すると自動で成果リンクに変換されます）
+const AFFILIATE_CONFIG = {
+  rakutenId: '', // 例: '12345678.abcdefgh.12345678.abcdefgh'
+  amazonTag: '', // 例: 'yourtag-22'
+  yahooSid: '',  // 例: '1234567'
+  yahooPid: ''   // 例: '1234567890'
+};
+
+function buildShopUrls(keyword) {
+  const q = encodeURIComponent(keyword);
+  const rawRakuten = `https://search.rakuten.co.jp/search/mall/${q}/`;
+  const rawAmazon = `https://www.amazon.co.jp/s?k=${q}`;
+  const rawYahoo = `https://shopping.yahoo.co.jp/search?p=${q}`;
+
+  return {
+    rakuten: AFFILIATE_CONFIG.rakutenId
+      ? `https://hb.afl.rakuten.co.jp/hgc/${AFFILIATE_CONFIG.rakutenId}/?pc=${encodeURIComponent(rawRakuten)}`
+      : rawRakuten,
+    amazon: AFFILIATE_CONFIG.amazonTag
+      ? `${rawAmazon}&tag=${encodeURIComponent(AFFILIATE_CONFIG.amazonTag)}`
+      : rawAmazon,
+    yahoo: AFFILIATE_CONFIG.yahooSid && AFFILIATE_CONFIG.yahooPid
+      ? `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${encodeURIComponent(AFFILIATE_CONFIG.yahooSid)}&pid=${encodeURIComponent(AFFILIATE_CONFIG.yahooPid)}&vc_url=${encodeURIComponent(rawYahoo)}`
+      : rawYahoo
+  };
+}
+
 // 最大耐荷重テーブル (LI 69..112 -> kg @ 240kPa STD / 290kPa XL)
 const LI_MAX_KG = {
   69: 325, 70: 335, 71: 345, 72: 355, 73: 365, 74: 375, 75: 387, 76: 400,
@@ -17,18 +44,21 @@ const COMMON_LI_MAP = {
   '165/70R14': [81, false], '175/65R14': [82, false], '175/65R15': [84, false],
   '175/70R14': [84, false], '175/80R16': [91, false], '185/55R15': [82, false],
   '185/55R16': [83, false], '185/60R15': [84, false], '185/65R15': [88, false],
-  '195/50R16': [84, false], '195/55R16': [87, false], '195/60R16': [89, false],
-  '195/65R15': [91, false], '195/80R15': [107, false], '205/45R17': [88, true],
-  '205/50R17': [93, true],  '205/55R16': [91, false], '205/55R17': [91, false],
-  '205/60R16': [92, false], '205/65R16': [95, false], '215/45R17': [91, true],
-  '215/45R18': [93, true],  '215/50R17': [91, false], '215/55R17': [94, false],
-  '215/60R16': [95, false], '215/60R17': [96, false], '215/65R16': [98, false],
-  '215/65R17': [109, false], '225/40R18': [92, true], '225/45R17': [94, true],
-  '225/45R18': [95, true],  '225/50R17': [98, true],  '225/55R17': [97, false],
-  '225/55R18': [98, false], '225/60R17': [99, false], '225/60R18': [100, false],
-  '225/65R17': [102, false], '225/65R18': [103, false], '235/40R18': [95, true],
-  '235/45R18': [98, true],  '235/50R18': [97, false], '235/55R18': [100, false],
-  '245/40R18': [97, true],  '245/40R19': [98, true]
+  '195/50R16': [84, false], '195/50R19': [88, true],  '195/55R16': [87, false],
+  '195/60R16': [89, false], '195/60R17': [90, false], '195/65R15': [91, false],
+  '195/80R15': [107, false], '205/45R17': [88, true], '205/50R17': [93, true],
+  '205/55R16': [91, false], '205/55R17': [91, false], '205/60R16': [92, false],
+  '205/65R16': [95, false], '215/45R17': [91, true],  '215/45R18': [93, true],
+  '215/50R17': [91, false], '215/50R18': [92, false], '215/55R17': [94, false],
+  '215/55R18': [95, false], '215/60R16': [95, false], '215/60R17': [96, false],
+  '215/65R16': [98, false], '215/65R17': [109, false], '225/40R18': [92, true],
+  '225/45R17': [94, true],  '225/45R18': [95, true],  '225/50R17': [98, true],
+  '225/55R17': [97, false], '225/55R18': [98, false], '225/55R19': [99, false],
+  '225/60R17': [99, false], '225/60R18': [100, false], '225/65R17': [102, false],
+  '225/65R18': [103, false], '235/40R18': [95, true], '235/45R18': [98, true],
+  '235/50R18': [97, false], '235/55R18': [100, false], '235/55R19': [101, false],
+  '245/40R18': [97, true],  '245/40R19': [98, true],  '265/65R17': [112, false],
+  '265/70R17': [112, false]
 };
 
 const POPULAR_BUDGET_SIZES = [
@@ -245,6 +275,214 @@ const CAR_ARUARU_DB = {
       '【JWL-T刻印＆LT/バン規格必須（4ナンバー/1ナンバー）】普通の乗用車用タイヤ（LI98等のSUVタイヤ）やJWLのみのホイールを履くと車検一発不合格になります！195/80R15 107/105L や 215/65R16C 109/107R 等が必須。',
       '【ハブ径106mm＆6穴】オフセットは+33〜+38前後に収めないとスライドドア干渉やハミタイ即アウトです（キャラバンは+45前後でさらに内側・ハブ100mmで別物）。',
       '【空気圧350〜450kPaの世界】乗用車感覚の240kPaではなく、貨物車両規定圧（前350/後425kPa等）が必須です。'
+    ]
+  },
+  prius_60: {
+    name: '新型60プリウス [PCD114.3-5H / 195/50R19]',
+    maker: 'toyota',
+    hubMm: 60, pcd: '114.3-5H', pitch: 'M12×P1.5 (一部ボルト注意)', seat: 'トヨタ平座',
+    min: { width: 195, aspect: 60, inch: 17, j: 6.5, et: 40, kpa: 240, li: 90, xl: false },
+    max: { width: 195, aspect: 50, inch: 19, j: 6.5, et: 40, margin: 12 },
+    target: { width: 205, aspect: 55, inch: 17, j: 7.0, et: 40, spacer: 0, li: 91, xl: false },
+    traps: [
+      '【30/50系の100-5Hホイールは一切付かない！】60プリウスからPCD114.3-5Hへ変更されました。旧型プリウス用ホイールを安く買って帰っても付きません。',
+      '【純正195/50R19が高すぎ＆品薄罠】上級グレードの195/50R19(外径約677mm)はタイヤ代が非常に高く種類が少ないため、下位グレード基準の195/60R17(約666mm)や205/55R17(約657mm)等へインチダウンするのが定番です。',
+      '【15インチ不可】旧型用の195/65R15はブレーキ干渉＆PCD違いで装着不可です。'
+    ]
+  },
+  sienta_10_170: {
+    name: 'シエンタ (170系 / 新型10系) [100-5H]',
+    maker: 'toyota',
+    hubMm: 54, pcd: '100-5H', pitch: 'M12×P1.5', seat: 'トヨタ平座 (スチール車はテーパー)',
+    min: { width: 185, aspect: 60, inch: 15, j: 5.5, et: 39, kpa: 240, li: 88, xl: false },
+    max: { width: 195, aspect: 50, inch: 16, j: 6.0, et: 45, margin: 10 },
+    target: { width: 185, aspect: 65, inch: 15, j: 6.0, et: 40, spacer: 0, li: 88, xl: false },
+    traps: [
+      '【170系185/60R15 vs 新型10系185/65R15】同じシエンタでも170系(外径603mm)と新型10系(外径621mm)でタイヤ外径とLI要件が違います。旧型の185/60R15を新型に履くと車高低下＆LI不足リスクあり。',
+      '【コンパクトなのに5穴100-5H】ヤリス/アクア(4穴)のホイールは付きません。30/50プリウス純正(15×6J+45 100-5H)は流用しやすいですが、インセット差と平座ナットに注意。',
+      '【純正スチールナットはテーパー】純正鉄チン車は60°テーパーナット、純正アルミ車は平座ナットのため、ホイール変更時はナット形状要確認。'
+    ]
+  },
+  freed_gb: {
+    name: 'フリード (GB3/4=4穴 → GB5-8/GT=5穴)',
+    maker: 'honda',
+    hubMm: 64, pcd: '114.3-5H (GB3/4は100-4H)', pitch: 'M12×P1.5', seat: '12R球面',
+    min: { width: 185, aspect: 65, inch: 15, j: 5.5, et: 49, kpa: 230, li: 88, xl: false },
+    max: { width: 195, aspect: 55, inch: 16, j: 6.0, et: 50, margin: 10 },
+    target: { width: 185, aspect: 65, inch: 15, j: 6.0, et: 48, spacer: 0, li: 88, xl: false },
+    traps: [
+      '【初代GB3/4(4穴100)と2代目GB5〜新型GT(5穴114.3)で穴数が違う！】年式確認なしでフリード用として売ると穴数が合いません。',
+      '【ホンダ12R球面ナット】純正ホイールは球面座。社外ホイールを組む時は必ず60°テーパーナットをセット販売。',
+      '【インセット+49〜+53と深め】社外+38〜+42の汎用5穴ホイールを履くと、フロントフェンダーギリギリ〜ハミタイしやすいので+45〜+50推奨。'
+    ]
+  },
+  vezel_rv: {
+    name: 'ヴェゼル / ZR-V / オデッセイ',
+    maker: 'honda',
+    hubMm: 64, pcd: '114.3-5H', pitch: 'M12×P1.5', seat: '12R球面',
+    min: { width: 215, aspect: 60, inch: 16, j: 7.0, et: 50, kpa: 230, li: 95, xl: false },
+    max: { width: 225, aspect: 50, inch: 18, j: 7.5, et: 55, margin: 12 },
+    target: { width: 215, aspect: 60, inch: 16, j: 6.5, et: 48, spacer: 0, li: 95, xl: false },
+    traps: [
+      '【新型RVヴェゼル外径アップ罠】旧型RUヴェゼル(215/60R16・215/55R17 外径約668mm)に対し、新型RVヴェゼル(215/60R16・225/50R18 外径約682mm)はやや大径。特にZR-Vはさらに大きく225/55R18(約705mm)のため流用不可。',
+      '【16インチへの安価インチダウン】ヴェゼル/RCオデッセイの上級18インチはタイヤが高いので、冬や節約時は215/60R16が定番で安い（ただし一部大径ブレーキ車要確認）。',
+      '【ホンダ12R球面】社外アルミへ交換時は60°テーパーナット必須。'
+    ]
+  },
+  stepwgn_rp: {
+    name: 'ステップワゴン (RP1-5 / 新型RP6-8)',
+    maker: 'honda',
+    hubMm: 64, pcd: '114.3-5H', pitch: 'M12×P1.5', seat: '12R球面',
+    min: { width: 205, aspect: 60, inch: 16, j: 6.0, et: 45, kpa: 240, li: 92, xl: false },
+    max: { width: 205, aspect: 55, inch: 17, j: 6.5, et: 50, margin: 10 },
+    target: { width: 205, aspect: 60, inch: 16, j: 6.5, et: 48, spacer: 0, li: 92, xl: false },
+    traps: [
+      '【RK/RP前期の15インチ→RP6-8新型は16インチ〜】旧型で使えた安い195/65R15は、新型RP6〜8（205/60R16標準）には外径不足＆キャリパー干渉で装着不可です。',
+      '【純正インセット+45〜+50】ミニバンはクリアランスがシビアで、汎用+38を履くとフロントがはみ出しやすいです。',
+      '【LI92以上＆12R球面ナット】ミニバン車重のため耐荷重厳守＋社外ホイールはテーパーナット別途必須。'
+    ]
+  },
+  serena_c27_c28: {
+    name: 'セレナ (C26 / C27 / C28) [日産ハブ66mm]',
+    maker: 'nissan',
+    hubMm: 66, pcd: '114.3-5H', pitch: 'M12×P1.25', seat: '60°テーパー',
+    min: { width: 195, aspect: 65, inch: 15, j: 5.5, et: 45, kpa: 240, li: 91, xl: false },
+    max: { width: 205, aspect: 55, inch: 17, j: 6.5, et: 45, margin: 10 },
+    target: { width: 205, aspect: 65, inch: 16, j: 6.5, et: 45, spacer: 0, li: 95, xl: false },
+    traps: [
+      '【日産ハブ66mm罠】同じ5穴114.3でもトヨタ純正(60mm)やホンダ純正(64mm)はハブが刺さらず装着不可！',
+      '【C28新型は16インチ＆205/65R16化】C26/C27の定番195/65R15(外径635mm)は、C28型では外径(205/65R16=約673mm)・耐荷重(LI95)・ブレーキ径すべて合わず流用不可です！',
+      '【ネジピッチM12×P1.25】トヨタ/ホンダ用のP1.5ナットは使えません。'
+    ]
+  },
+  note_e12_e13: {
+    name: '日産ノート / オーラ (E12 / E13)',
+    maker: 'nissan',
+    hubMm: 60, pcd: '100-4H', pitch: 'M12×P1.25', seat: '60°テーパー',
+    min: { width: 185, aspect: 65, inch: 15, j: 5.5, et: 40, kpa: 230, li: 88, xl: false },
+    max: { width: 205, aspect: 50, inch: 17, j: 6.5, et: 42, margin: 10 },
+    target: { width: 185, aspect: 60, inch: 16, j: 6.0, et: 42, spacer: 0, li: 86, xl: false },
+    traps: [
+      '【ハブ60mm罠（コンパクトカーでは大きめ）】ノートは100-4Hですがハブ60mmのため、ヤリス/アクア純正(54mm)やフィット純正(56mm)はハブに当って付きません。',
+      '【E12(14/15インチ)とE13(16インチ)の外径差】E13ノート標準は185/60R16(外径628mm)、オーラは205/50R17(637mm)。E12用の安い185/70R14等はE13にはキャリパー・外径が合いません。',
+      '【ピッチM12×P1.25】日産車のためP1.25ナット必須。'
+    ]
+  },
+  xtrail_t32_t33: {
+    name: 'エクストレイル (T32=M12 → T33=M14)',
+    maker: 'nissan',
+    hubMm: 66, pcd: '114.3-5H', pitch: 'T32:M12×P1.25 / T33:M14×P1.5', seat: 'T32:テーパー / T33:ボルト系',
+    min: { width: 225, aspect: 65, inch: 17, j: 7.0, et: 45, kpa: 230, li: 102, xl: false },
+    max: { width: 235, aspect: 55, inch: 19, j: 7.5, et: 40, margin: 12 },
+    target: { width: 225, aspect: 65, inch: 17, j: 7.0, et: 42, spacer: 0, li: 102, xl: false },
+    traps: [
+      '【T32と新型T33のM14ボルト罠】同じ114.3-5H・ハブ66mmですが、新型T33からM14ハブボルトに変わっており、T32用の一般的な社外ホイール(M12穴)はボルトが通らない事が多いです！',
+      '【225/65R17定番インチダウン】18/19インチ装着車でも225/65R17へ落とすとタイヤ代が安くなります（T33等ブレーキ径確認）。',
+      '【ハブ66mm】他社純正(60/64mm)は装着不可。'
+    ]
+  },
+  crown_210_220: {
+    name: 'クラウン (200 / 210 / 220系) [キャリパー注意]',
+    maker: 'toyota',
+    hubMm: 60, pcd: '114.3-5H', pitch: 'M12×P1.5', seat: 'トヨタ平座',
+    min: { width: 215, aspect: 60, inch: 16, j: 7.0, et: 40, kpa: 240, li: 95, xl: false },
+    max: { width: 225, aspect: 45, inch: 18, j: 8.0, et: 45, margin: 12 },
+    target: { width: 215, aspect: 55, inch: 17, j: 7.0, et: 40, spacer: 0, li: 94, xl: false },
+    traps: [
+      '【3.5L / RS / アスリートのビッグキャリパー罠】通常の2.0/2.5Lは16インチ(215/60R16)が入りますが、3.5L・RS系・対向4POTキャリパー車は16インチ（場合により17インチも）がキャリパーにガッツリ干渉します！必ず「ビッグキャリパー対応」要確認。',
+      '【トヨタ平座ナット】純正アルミは平座。社外ホイールは60°テーパーナット別途必須。',
+      '【安い215/45R17を履くのは絶対NG】クラウンは外径660〜670mm級(215/55R17・225/45R18)のため、プリウス用の215/45R17(625mm)等を履くと外径-6%で車検NG＆腹下擦りになります。'
+    ]
+  },
+  crown_cross_230: {
+    name: '新型クラウン (クロスオーバー等) [M14ボルト]',
+    maker: 'toyota',
+    hubMm: 60, pcd: '114.3-5H', pitch: 'M14×P1.5 (ハブボルト)', seat: '14R球面 / 専用',
+    min: { width: 225, aspect: 55, inch: 19, j: 7.5, et: 35, kpa: 240, li: 99, xl: false },
+    max: { width: 225, aspect: 45, inch: 21, j: 7.5, et: 35, margin: 12 },
+    target: { width: 225, aspect: 55, inch: 19, j: 7.5, et: 35, spacer: 0, li: 99, xl: false },
+    traps: [
+      '【従来のクラウン(M12)のホイールが一切付かない！】新型クラウン系は114.3-5Hながら欧州車式の「M14ボルト締結」となったため、従来のM12用社外ホイールはボルト穴径不足＆座面違いで装着不可！',
+      '【225/55R19 / 225/45R21の大径特殊サイズ】外径730mmクラスとSUV並みの大径のため、過去のセダン用タイヤ・ホイールは流用不可です。',
+      '【インチダウンもM14対応専用品が必要】18インチへ落とす場合も必ず「新型クラウン/レクサスNX・RX M14対応ホイール」を指定。'
+    ]
+  },
+  harrier_rav4: {
+    name: 'ハリアー / RAV4 (60/80/50系) [トヨタ平座]',
+    maker: 'toyota',
+    hubMm: 60, pcd: '114.3-5H', pitch: 'M12×P1.5', seat: 'トヨタ平座',
+    min: { width: 225, aspect: 65, inch: 17, j: 7.0, et: 35, kpa: 230, li: 102, xl: false },
+    max: { width: 235, aspect: 55, inch: 19, j: 7.5, et: 40, margin: 15 },
+    target: { width: 225, aspect: 65, inch: 17, j: 7.0, et: 38, spacer: 0, li: 102, xl: false },
+    traps: [
+      '【225/65R17で半額級に節約】80ハリアーZグレードやRAV4の19インチ(225/55R19)はタイヤ代が高いので、下位グレード基準の225/65R17(外径約724mm)へ落とすと安く済みます（PHEV等大径ブレーキ車は18インチ以上必要）。',
+      '【トヨタ平座ナット】社外ホイールに交換時は60°テーパーナット別途必須。',
+      '【オフセット+35〜+40前後】RAV4/ハリアーにミニバン用の+50〜+53を履くと15mm内側に入り、サス干渉や引っ込みすぎになります。'
+    ]
+  },
+  landcruiser_prado: {
+    name: 'プラド(150) / ハイラックス / ランクル250',
+    maker: 'toyota',
+    hubMm: 106, pcd: '139.7-6H', pitch: 'M12×P1.5 (250/300はM14×P1.5)', seat: 'トヨタ平座 (社外60°テーパー)',
+    min: { width: 265, aspect: 65, inch: 17, j: 7.5, et: 25, kpa: 220, li: 112, xl: false },
+    max: { width: 265, aspect: 60, inch: 18, j: 7.5, et: 25, margin: 12 },
+    target: { width: 265, aspect: 65, inch: 17, j: 7.5, et: 25, spacer: 0, li: 112, xl: false },
+    traps: [
+      '【150プラド(ハブ106/M12) vs ランクル250/300(ハブ95/M14)の互換性ゼロ罠！】同じ139.7-6Hでもランクル250/300はハブ95mm・M14平座ボルト(ナット)になったため、150プラド用やハイエース用はほぼ付きません（250用をプラドに入れるのも不可）。',
+      '【ハイエース用6穴ホイール流用注意】ハイエース用(6.5J +38)はインセット・J数・キャリパー逃げでプラドに付かないことが多いです。',
+      '【高耐荷重LI110以上】2トン超の車重のため乗用・軽SUVタイヤは厳禁。'
+    ]
+  },
+  subaru_levorg_forester: {
+    name: 'スバル (レヴォーグ / フォレスター / インプレッサ)',
+    maker: 'subaru',
+    hubMm: 56, pcd: '114.3-5H / 100-5H混在', pitch: 'M12×P1.25', seat: '60°テーパー',
+    min: { width: 215, aspect: 50, inch: 17, j: 7.0, et: 55, kpa: 240, li: 91, xl: false },
+    max: { width: 225, aspect: 45, inch: 18, j: 7.5, et: 55, margin: 12 },
+    target: { width: 215, aspect: 50, inch: 17, j: 7.0, et: 48, spacer: 0, li: 91, xl: false },
+    traps: [
+      '【100-5Hと114.3-5Hが車種・世代で混在！】レヴォーグ・WRX S4・SK/SLフォレスターは114.3-5Hですが、インプレッサ/XV/クロストレック/SJフォレスターは100-5H！年式と型式確認が必須。',
+      '【純正インセット+55と超深い！】スバル車に普通の+38〜+40の社外ホイールを履くと15mm以上外に出てフロントフェンダーからハミタイしやすいです（+45〜+53推奨）。',
+      '【AWDは4本同一サイズ＆P1.25】前後異サイズ・外径差はデフ破損の原因。ナットは必ずM12×P1.25。'
+    ]
+  },
+  mazda3_cx30: {
+    name: 'MAZDA3 / CX-30 / CX-60 [ハブ67mm]',
+    maker: 'mazda',
+    hubMm: 67, pcd: '114.3-5H', pitch: 'M12×P1.5', seat: '60°テーパー',
+    min: { width: 205, aspect: 60, inch: 16, j: 6.5, et: 45, kpa: 250, li: 92, xl: false },
+    max: { width: 215, aspect: 45, inch: 18, j: 7.0, et: 45, margin: 12 },
+    target: { width: 205, aspect: 60, inch: 16, j: 6.5, et: 45, spacer: 0, li: 92, xl: false },
+    traps: [
+      '【ハブ径67mm罠】トヨタ(60mm)・ホンダ(64mm)・日産(66mm)純正ホイールはすべてハブ穴が小さく物理的に入りません！',
+      '【MAZDA3(約652mm) vs CX-30(約704mm)】同じプラットフォームでもタイヤ外径が全く違います（MAZDA3は215/45R18、CX-30は215/55R18）。',
+      '【CX-60はFRベースで高耐荷重・大径】CX-60は235/60R18〜235/50R20クラスでCX-30とは別物。'
+    ]
+  },
+  swift_zc33s: {
+    name: 'スイフトスポーツ(ZC33S) / スイフト',
+    maker: 'kei_suzuki_daihatsu',
+    hubMm: 60, pcd: '114.3-5H (スイフトは100-4H)', pitch: 'M12×P1.25', seat: '60°テーパー',
+    min: { width: 195, aspect: 50, inch: 16, j: 6.0, et: 45, kpa: 230, li: 84, xl: false },
+    max: { width: 195, aspect: 45, inch: 17, j: 6.5, et: 50, margin: 10 },
+    target: { width: 195, aspect: 50, inch: 16, j: 6.5, et: 45, spacer: 0, li: 84, xl: false },
+    traps: [
+      '【スイフト(4穴100・54mm) vs スイフトスポーツ(5穴114.3・60mm)】同じ名前でも穴数・PCD・ハブ径が別車レベルで違います！',
+      '【ZC33Sの純正195/45R17が高い＆特殊】冬やコスト重視なら195/50R16（外径約601mmで195/45R17の607mmに近い）か185/55R16へインチダウンするのが定番（15インチはブレーキ干渉リスク大）。',
+      '【ネジピッチM12×P1.25】スズキ車のため、トヨタ用P1.5ナットは不可。'
+    ]
+  },
+  probox_succeed: {
+    name: 'プロボックス / サクシード / 軽バン [4ナンバーLT]',
+    maker: 'toyota',
+    hubMm: 54, pcd: '100-4H', pitch: 'M12×P1.5 (軽バンはメーカー別)', seat: '60°テーパー',
+    min: { width: 155, aspect: 80, inch: 14, j: 5.0, et: 39, kpa: 260, li: 88, xl: false },
+    max: { width: 165, aspect: 80, inch: 13, j: 5.0, et: 39, margin: 8 },
+    target: { width: 155, aspect: 80, inch: 14, j: 5.0, et: 39, spacer: 0, li: 88, xl: false },
+    traps: [
+      '【4ナンバー商用車は「LT規格タイヤ＋JWL-Tホイール」必須!!】プロボックス(155/80R14 88/86N LT)やエブリイ/ハイゼット(145/80R12 80/78N LT)に乗用車用の安い155/65R14等を履かせると車検NG・過積載バーストになります！',
+      '【軽トラ/軽バンの12→14インチ化注意】カスタムで14インチにする場合も「JWL-T刻印入りホイール＋LT規格タイヤ（155/65R14C等）」でないと貨物車検に通らない事が多いです。',
+      '【プロボックスの13→14インチ世代差】前期165/80R13と現行155/80R14あり。現行ハイブリッド等は13インチ不可。'
     ]
   }
 };
@@ -649,7 +887,42 @@ function renderEvidence() {
 
   renderAruaruDict();
   renderAlternatives(mn, tm);
+  renderAffiliateLinks(ev);
   drawEvidenceCanvas(ev);
+  window.__lastEvidence = ev;
+}
+
+function renderAffiliateLinks(ev) {
+  const { tm, vSpec } = ev;
+  const sizeStr = `${tm.width}/${tm.aspect}R${tm.inch}`;
+  const items = [
+    { label: `タイヤ「${sizeStr}」最安検索`, query: `${sizeStr} サマータイヤ` }
+  ];
+
+  if (state.wheelOrigin === 'aftermarket') {
+    const pitchShort = vSpec.pitch.includes('1.25') ? 'M12 P1.25' : vSpec.pitch.includes('M14') ? 'M14' : 'M12 P1.5';
+    items.push({ label: `60°テーパーナット (${pitchShort})`, query: `ホイールナット 60度 テーパー ${pitchShort}` });
+    if (vSpec.hubMm && vSpec.hubMm < 73) {
+      items.push({ label: `ハブリング (73mm→${vSpec.hubMm}mm)`, query: `ハブリング 73 ${vSpec.hubMm}` });
+    }
+  }
+  if (tm.spacer > 0 || ev.outerRimDiff < -5) {
+    items.push({ label: `ホイールスペーサー (${tm.spacer || 5}mm等)`, query: `ホイールスペーサー ${tm.spacer || 5}mm` });
+  }
+
+  document.getElementById('shopRows').innerHTML = items.map(it => {
+    const urls = buildShopUrls(it.query);
+    return `
+      <div class="shop-row">
+        <span class="shop-label">${it.label}</span>
+        <div class="shop-links">
+          <a class="shop-link rakuten" href="${urls.rakuten}" target="_blank" rel="noopener">楽天市場</a>
+          <a class="shop-link amazon" href="${urls.amazon}" target="_blank" rel="noopener">Amazon</a>
+          <a class="shop-link yahoo" href="${urls.yahoo}" target="_blank" rel="noopener">Yahoo!</a>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderAruaruDict() {
@@ -1052,6 +1325,172 @@ if (typeof ResizeObserver !== 'undefined') {
   new ResizeObserver(() => renderEvidence()).observe(document.querySelector('.canvas-wrap'));
 }
 window.addEventListener('resize', () => renderEvidence());
+
+// --- PNG Evidence Sheet Exporter (1200x820) ---
+function wrapTextLines(c, text, maxWidth) {
+  const lines = [];
+  let line = '';
+  for (const ch of text) {
+    const test = line + ch;
+    if (c.measureText(test).width > maxWidth && line.length > 0) {
+      lines.push(line);
+      line = ch;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function exportEvidenceSheetPng() {
+  const ev = window.__lastEvidence || evaluateEvidence();
+  const { tm, mn, mx } = ev;
+
+  const sheet = document.createElement('canvas');
+  sheet.width = 1200;
+  sheet.height = 820;
+  const sc = sheet.getContext('2d');
+
+  // Background
+  sc.fillStyle = '#ffffff';
+  sc.fillRect(0, 0, 1200, 820);
+
+  // Header Banner
+  const statusMap = {
+    ok: { bg: '#ecfdf5', bd: '#10b981', tx: '#065f46', tag: '適合・安全圏' },
+    warn: { bg: '#fffbeb', bd: '#f59e0b', tx: '#92400e', tag: 'マッチング外・条件付きOK' },
+    ng: { bg: '#fef2f2', bd: '#ef4444', tx: '#991b1b', tag: '装着不可 / 非推奨' }
+  };
+  const st = statusMap[ev.overall];
+  sc.fillStyle = st.bg;
+  sc.fillRect(24, 20, 1152, 86);
+  sc.strokeStyle = st.bd;
+  sc.lineWidth = 3;
+  sc.strokeRect(24, 20, 1152, 86);
+
+  sc.fillStyle = st.bd;
+  sc.fillRect(40, 36, 195, 28);
+  sc.fillStyle = '#ffffff';
+  sc.font = 'bold 14px sans-serif';
+  sc.textAlign = 'center';
+  sc.fillText(st.tag, 137, 55);
+
+  sc.textAlign = 'left';
+  sc.fillStyle = st.tx;
+  sc.font = 'bold 21px sans-serif';
+  sc.fillText(`タイヤ・ホイール適合エビデンス診断シート — ${ev.vSpec.name}`, 250, 57);
+
+  sc.fillStyle = '#475569';
+  sc.font = '13px sans-serif';
+  const nowStr = new Date().toLocaleString('ja-JP');
+  sc.fillText(`診断日時: ${nowStr}   |   ハブ径:${ev.vSpec.hubMm || '?'}mm  PCD:${ev.vSpec.pcd}  ピッチ:${ev.vSpec.pitch}  座面:${ev.vSpec.seat}`, 40, 90);
+
+  // Size comparison strip
+  sc.fillStyle = '#f8fafc';
+  sc.fillRect(24, 120, 1152, 62);
+  sc.strokeStyle = '#cbd5e1';
+  sc.lineWidth = 1;
+  sc.strokeRect(24, 120, 1152, 62);
+
+  sc.fillStyle = '#1e293b';
+  sc.font = 'bold 15px sans-serif';
+  sc.fillText(`検討サイズ: ${tm.width}/${tm.aspect}R${tm.inch} (${tm.j.toFixed(1)}J ${tm.effEt >= 0 ? '+' : ''}${tm.effEt}) [LI:${state.target.li}${state.target.xl ? ' XL' : ''}]`, 40, 146);
+  sc.fillStyle = '#475569';
+  sc.font = '13px sans-serif';
+  sc.fillText(`純正最小基準: ${mn.width}/${mn.aspect}R${mn.inch} (${mn.j.toFixed(1)}J +${mn.et})  |  純正最大枠: ${mx.width}/${mx.aspect}R${mx.inch} (${mx.j.toFixed(1)}J +${mx.et}, 余裕+${ev.fenderMargin}mm)`, 40, 170);
+
+  // Left: Transfer 2D Cross-Section Canvas
+  sc.strokeStyle = '#cbd5e1';
+  sc.strokeRect(24, 198, 560, 410);
+  sc.drawImage(canvas, 26, 200, 556, 406);
+
+  // Left Bottom: Diameter & Spec Summary
+  sc.fillStyle = '#f8fafc';
+  sc.fillRect(24, 622, 560, 174);
+  sc.strokeStyle = '#cbd5e1';
+  sc.strokeRect(24, 622, 560, 174);
+  sc.fillStyle = '#0f172a';
+  sc.font = 'bold 14px sans-serif';
+  sc.fillText('車種別あるある・現場チェックポイント', 38, 646);
+  sc.font = '12px sans-serif';
+  sc.fillStyle = '#334155';
+  let ly = 668;
+  ev.vSpec.traps.slice(0, 3).forEach(trap => {
+    const lines = wrapTextLines(sc, `• ${trap}`, 532);
+    lines.slice(0, 2).forEach(ln => {
+      if (ly < 788) {
+        sc.fillText(ln, 38, ly);
+        ly += 18;
+      }
+    });
+  });
+
+  // Right: 5 Evidence Rows
+  const rightCards = [
+    {
+      title: `1. 外径・メーター検査 (${ev.diaText})`,
+      level: ev.diaLevel,
+      text: `純正 ${mn.tireDia.toFixed(0)}mm → 検討 ${tm.tireDia.toFixed(0)}mm (差 ${fmt(ev.diaDiff)} / ${ev.diaPct >= 0 ? '+' : ''}${ev.diaPct.toFixed(1)}%) | メーター40km/h時実測 ${ev.actualSpeedAt40.toFixed(1)}km/h (車検30.9〜42.5) | 車高 ${fmt(ev.groundClearanceDiff)}`
+    },
+    {
+      title: `2. 耐荷重・空気圧 (${ev.loadText})`,
+      level: ev.loadLevel,
+      text: `純正必要 ${ev.reqKg}kg/本 (${state.min.kpa}kPa) → 検討 同圧 ${ev.tgtKgSameKpa}kg / 最大 ${ev.tgtMaxKg}kg (${ev.tgtMaxKpa}kPa)` + (ev.loadLevel === 'warn' ? ` → ${ev.recommendedKpa}kPa昇圧でOK` : '')
+    },
+    {
+      title: `3. リム幅 JATMA (${ev.rimText})`,
+      level: ev.rimLevel,
+      text: `タイヤ幅 ${tm.width}mm 適用レンジ ${ev.rimRange.minJ.toFixed(1)}J〜${ev.rimRange.maxJ.toFixed(1)}J に対し、検討ホイール ${tm.j.toFixed(1)}J`
+    },
+    {
+      title: `4. クリアランス (${ev.clearText})`,
+      level: ev.clearLevel,
+      text: `外側(vs最大): リム ${fmt(ev.outerRimDiff)} / タイヤ ${fmt(ev.outerTireDiff)} (余裕+${ev.fenderMargin}mm)  |  内側(vs最小): 径R ${fmt(ev.rimRadDiff)} / リム ${fmt(ev.innerRimDiff)}`
+    },
+    {
+      title: `5. ハブ径・ナット座面 (${ev.physText})`,
+      level: ev.physLevel,
+      text: ev.physNote
+    }
+  ];
+
+  let ry = 198;
+  rightCards.forEach(card => {
+    const col = card.level === 'ng' ? '#ef4444' : card.level === 'warn' ? '#f59e0b' : '#10b981';
+    sc.fillStyle = '#ffffff';
+    sc.fillRect(602, ry, 574, 108);
+    sc.strokeStyle = '#cbd5e1';
+    sc.lineWidth = 1;
+    sc.strokeRect(602, ry, 574, 108);
+    sc.fillStyle = col;
+    sc.fillRect(602, ry, 6, 108);
+
+    sc.fillStyle = '#0f172a';
+    sc.font = 'bold 14px sans-serif';
+    sc.fillText(card.title, 618, ry + 24);
+
+    sc.fillStyle = '#334155';
+    sc.font = '12px sans-serif';
+    const lines = wrapTextLines(sc, card.text, 544);
+    lines.slice(0, 3).forEach((ln, idx) => {
+      sc.fillText(ln, 618, ry + 48 + idx * 19);
+    });
+    ry += 120;
+  });
+
+  sheet.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fitment_${tm.width}-${tm.aspect}R${tm.inch}_${tm.j}J_ET${tm.effEt}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
+}
+
+document.getElementById('saveSheetBtn').addEventListener('click', exportEvidenceSheetPng);
 
 loadFromUrl();
 syncInputs();

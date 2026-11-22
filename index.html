@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>実車タイヤ・ホイール適合＆接客エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
   <header class="topbar">
@@ -14,22 +14,39 @@
     </div>
     <div class="topbar-actions">
       <select id="presetSelect" title="代表車種プリセット">
-        <option value="">車種プリセット (14車系)...</option>
+        <option value="">車種プリセット (30車系)...</option>
         <option value="kei_nbox">ホンダ軽 (N-BOX / N-WGN / N-ONE)</option>
         <option value="kei_dayz">日産・三菱軽 (デイズ / ルークス / eK)</option>
         <option value="kei_suzuki_daihatsu">スズキ・ダイハツ軽 (スペーシア / タント等)</option>
         <option value="jimny_jb64">ジムニー (JB64 / JB23)</option>
-        <option value="compact_fit_aqua">コンパクト4H (アクア / ヤリス / フィット / ノート)</option>
+        <option value="compact_fit_aqua">コンパクト4H (アクア / ヤリス / フィット)</option>
+        <option value="note_e12_e13">日産ノート / オーラ (E12 / E13)</option>
+        <option value="sienta_10_170">シエンタ (170系 / 10系) [100-5H]</option>
+        <option value="freed_gb">フリード (GB3/4=4H → GB5/GT=5H)</option>
         <option value="prius_30_50">プリウス(30/50) / カローラ系 [PCD100-5H]</option>
-        <option value="minivan_noah_80">ミニバン (80ノア / ヴォクシー / セレナ / ステップ)</option>
+        <option value="prius_60">新型60プリウス [114.3-5H / 195/50R19]</option>
+        <option value="minivan_noah_80">ミニバン (80ノア / ヴォクシー / ステップ)</option>
         <option value="minivan_noah_90">新型90ノア / ヴォクシー [大径化]</option>
+        <option value="stepwgn_rp">ステップワゴン (RP1-5 / 新型RP6-8)</option>
+        <option value="serena_c27_c28">セレナ (C26 / C27 / C28) [ハブ66mm]</option>
         <option value="alphard_30">アルファード / ヴェルファイア (20/30系)</option>
         <option value="alphard_40">新型40アルファード / ヴェルファイア [PCD120/M14]</option>
         <option value="civic_fc1">シビック (FC1 / FK7 / FL1)</option>
         <option value="86_brz">86 / GR86 / BRZ [PCD100-5H / P1.25]</option>
-        <option value="suv_cx5">SUV (CX-5 / ハリアー / RAV4)</option>
+        <option value="swift_zc33s">スイフトスポーツ (ZC33S) / スイフト</option>
+        <option value="crown_210_220">クラウン (200 / 210 / 220系) [キャリパー注意]</option>
+        <option value="crown_cross_230">新型クラウン (クロスオーバー等) [M14ボルト]</option>
+        <option value="vezel_rv">ヴェゼル / ZR-V / オデッセイ</option>
+        <option value="suv_cx5">SUV (CX-5 / ハリアー / RAV4系) [マツダ67mm]</option>
+        <option value="harrier_rav4">ハリアー / RAV4 (60/80/50系) [トヨタ平座]</option>
+        <option value="xtrail_t32_t33">エクストレイル (T32=M12 → T33=M14)</option>
+        <option value="subaru_levorg_forester">レヴォーグ / フォレスター / インプレッサ</option>
+        <option value="mazda3_cx30">MAZDA3 / CX-30 / CX-60 [ハブ67mm]</option>
+        <option value="landcruiser_prado">プラド(150) / ハイラックス / ランクル250</option>
         <option value="hiace_200">ハイエース200系 / キャラバン [LT/JWL-T]</option>
+        <option value="probox_succeed">プロボックス / 軽バン (エブリイ/ハイゼット)</option>
       </select>
+      <button id="saveSheetBtn" class="btn btn-primary">診断画像(PNG)保存</button>
       <button id="shareUrlBtn" class="btn">URLコピー</button>
       <a href="https://yaiueno.github.io/wheel-fitment-3d/" class="btn btn-outline" target="_blank" rel="noopener">3D・STL出力版へ</a>
     </div>
@@ -204,7 +221,7 @@
           <div class="ev-body" id="bodyPhysical"></div>
           <ul class="trap-list" id="carTrapList"></ul>
           <div class="aruaru-dict">
-            <input type="text" id="aruaruSearch" placeholder="全14車系あるある辞書を検索 (例: N-BOX, 40アル, P1.25, ハイエース)..." />
+            <input type="text" id="aruaruSearch" placeholder="全30車系あるある辞書を検索 (例: 60プリウス, M14, P1.25, ハイエース)..." />
             <div class="aruaru-results" id="aruaruResults"></div>
           </div>
         </div>
@@ -215,11 +232,18 @@
           </div>
           <div class="alt-list" id="altList"></div>
         </div>
+
+        <div class="ev-card ev-shop" id="affiliateBox">
+          <div class="ev-head">
+            <span>7. 適合タイヤ・必要副資材の価格比較検索</span>
+          </div>
+          <div class="shop-rows" id="shopRows"></div>
+        </div>
       </div>
     </section>
   </main>
 
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
