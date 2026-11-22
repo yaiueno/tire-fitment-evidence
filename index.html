@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>実車タイヤ・ホイール適合＆接客エビデンス診断</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <title>タイヤ・ホイール適合エビデンス診断</title>
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <header class="topbar">
@@ -13,67 +13,57 @@
       <h1>タイヤ・ホイール適合エビデンス診断</h1>
     </div>
     <div class="topbar-actions">
-      <select id="presetSelect" title="代表車種プリセット">
-        <option value="">車種プリセット (30車系)...</option>
-        <option value="kei_nbox">ホンダ軽 (N-BOX / N-WGN / N-ONE)</option>
-        <option value="kei_dayz">日産・三菱軽 (デイズ / ルークス / eK)</option>
-        <option value="kei_suzuki_daihatsu">スズキ・ダイハツ軽 (スペーシア / タント等)</option>
-        <option value="jimny_jb64">ジムニー (JB64 / JB23)</option>
-        <option value="compact_fit_aqua">コンパクト4H (アクア / ヤリス / フィット)</option>
-        <option value="note_e12_e13">日産ノート / オーラ (E12 / E13)</option>
-        <option value="sienta_10_170">シエンタ (170系 / 10系) [100-5H]</option>
-        <option value="freed_gb">フリード (GB3/4=4H → GB5/GT=5H)</option>
-        <option value="prius_30_50">プリウス(30/50) / カローラ系 [PCD100-5H]</option>
-        <option value="prius_60">新型60プリウス [114.3-5H / 195/50R19]</option>
-        <option value="minivan_noah_80">ミニバン (80ノア / ヴォクシー / ステップ)</option>
-        <option value="minivan_noah_90">新型90ノア / ヴォクシー [大径化]</option>
-        <option value="stepwgn_rp">ステップワゴン (RP1-5 / 新型RP6-8)</option>
-        <option value="serena_c27_c28">セレナ (C26 / C27 / C28) [ハブ66mm]</option>
-        <option value="alphard_30">アルファード / ヴェルファイア (20/30系)</option>
-        <option value="alphard_40">新型40アルファード / ヴェルファイア [PCD120/M14]</option>
-        <option value="civic_fc1">シビック (FC1 / FK7 / FL1)</option>
-        <option value="86_brz">86 / GR86 / BRZ [PCD100-5H / P1.25]</option>
-        <option value="swift_zc33s">スイフトスポーツ (ZC33S) / スイフト</option>
-        <option value="crown_210_220">クラウン (200 / 210 / 220系) [キャリパー注意]</option>
-        <option value="crown_cross_230">新型クラウン (クロスオーバー等) [M14ボルト]</option>
-        <option value="vezel_rv">ヴェゼル / ZR-V / オデッセイ</option>
-        <option value="suv_cx5">SUV (CX-5 / ハリアー / RAV4系) [マツダ67mm]</option>
-        <option value="harrier_rav4">ハリアー / RAV4 (60/80/50系) [トヨタ平座]</option>
-        <option value="xtrail_t32_t33">エクストレイル (T32=M12 → T33=M14)</option>
-        <option value="subaru_levorg_forester">レヴォーグ / フォレスター / インプレッサ</option>
-        <option value="mazda3_cx30">MAZDA3 / CX-30 / CX-60 [ハブ67mm]</option>
-        <option value="landcruiser_prado">プラド(150) / ハイラックス / ランクル250</option>
-        <option value="hiace_200">ハイエース200系 / キャラバン [LT/JWL-T]</option>
-        <option value="probox_succeed">プロボックス / 軽バン (エブリイ/ハイゼット)</option>
-      </select>
-      <button id="saveSheetBtn" class="btn btn-primary">診断画像(PNG)保存</button>
-      <button id="shareUrlBtn" class="btn">URLコピー</button>
+      <button id="saveSheetBtn" class="btn btn-primary" type="button">診断画像(PNG)保存</button>
+      <button id="shareUrlBtn" class="btn" type="button">URLコピー</button>
       <a href="https://yaiueno.github.io/wheel-fitment-3d/" class="btn btn-outline" target="_blank" rel="noopener">3D・STL出力版へ</a>
     </div>
   </header>
 
   <main class="container">
-    <!-- ① 総合判定バナー & 接客トーク -->
+    <!-- 総合判定バナー & 接客トーク -->
     <section id="verdictBanner" class="verdict-banner status-ok">
       <div class="verdict-head">
-        <div class="verdict-badge" id="verdictBadge">判定中</div>
-        <div class="verdict-title" id="verdictTitle">--</div>
+        <span class="verdict-badge" id="verdictBadge">判定中</span>
+        <span class="verdict-title" id="verdictTitle">--</span>
       </div>
       <div class="verdict-talk" id="verdictTalk"></div>
       <ul class="verdict-reasons" id="verdictReasons"></ul>
     </section>
 
-    <!-- 入力エリア（3カード：検討中 / 純正最小・現在 / 純正最大・フェンダー限界） -->
+    <!-- 2サイズ比較入力（現在のサイズ / 検討サイズ） -->
     <section class="input-grid">
-      <!-- 検討サイズ -->
+      <div class="input-card card-base">
+        <div class="card-header">
+          <span class="card-tag tag-base">① 現在のサイズ（純正・基準）</span>
+          <span class="card-spec" id="baseSummary">--</span>
+        </div>
+        <div class="quick-row">
+          <input type="text" id="baseQuick" placeholder="例: 195/65R15 6.0J +45" />
+          <button id="baseQuickBtn" class="btn" type="button">反映</button>
+        </div>
+        <div class="fields-grid">
+          <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="b_width" /></label>
+          <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="b_aspect" /></label>
+          <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="b_inch" /></label>
+          <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="b_j" /></label>
+          <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="b_et" /></label>
+          <label class="field"><span>規定圧(kPa)</span><input type="text" inputmode="decimal" id="b_kpa" /></label>
+          <label class="field"><span>純正LI</span><input type="text" inputmode="decimal" id="b_li" /></label>
+          <label class="field check-box">
+            <span>規格</span>
+            <label class="inline-check"><input type="checkbox" id="b_xl" /> XL</label>
+          </label>
+        </div>
+      </div>
+
       <div class="input-card card-target">
         <div class="card-header">
-          <span class="card-tag tag-target">検討中（お客さん希望・在庫）</span>
+          <span class="card-tag tag-target">② 検討サイズ（買いたいタイヤ・ホイール）</span>
           <span class="card-spec" id="targetSummary">--</span>
         </div>
         <div class="quick-row">
-          <input type="text" id="targetQuick" placeholder="例: 195/65R15 6.0J +45" />
-          <button id="targetQuickBtn" class="btn">反映</button>
+          <input type="text" id="targetQuick" placeholder="例: 185/60R15 5.5J +42" />
+          <button id="targetQuickBtn" class="btn" type="button">反映</button>
         </div>
         <div class="fields-grid">
           <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="t_width" /></label>
@@ -82,94 +72,23 @@
           <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="t_j" /></label>
           <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="t_et" /></label>
           <label class="field"><span>スペーサー</span><input type="text" inputmode="decimal" id="t_spacer" /></label>
-          <label class="field"><span>LI (ロード)</span><input type="text" inputmode="decimal" id="t_li" /></label>
+          <label class="field"><span>検討LI</span><input type="text" inputmode="decimal" id="t_li" /></label>
           <label class="field check-box">
             <span>規格</span>
             <label class="inline-check"><input type="checkbox" id="t_xl" /> XL</label>
-          </label>
-          <label class="field col-span-4">
-            <span>検討ホイールの種類 (ハブ径・座面チェック用)</span>
-            <select id="wheelOriginSelect">
-              <option value="aftermarket">社外アルミ汎用 (60°テーパー / ハブ穴大)</option>
-              <option value="oem_same">車種・同メーカー純正ホイール</option>
-              <option value="oem_suzuki_daihatsu">スズキ/ダイハツ純正流用 (ハブ54mm / テーパー)</option>
-              <option value="oem_honda">ホンダ純正流用 (ハブ56・64mm / 12R球面)</option>
-              <option value="oem_toyota">トヨタ純正アルミ流用 (ハブ54・60mm / 平座)</option>
-              <option value="oem_nissan_mitsubishi">日産/三菱純正流用 (ハブ56・66mm)</option>
-            </select>
-          </label>
-        </div>
-      </div>
-
-      <!-- 純正最小（現在/ブレーキ側基準） -->
-      <div class="input-card card-base">
-        <div class="card-header">
-          <span class="card-tag tag-base">純正基準・最小 (内側/耐荷重)</span>
-          <span class="card-spec" id="minSummary">--</span>
-        </div>
-        <div class="quick-row">
-          <input type="text" id="minQuick" placeholder="例: 155/65R14 4.5J +45" />
-          <button id="minQuickBtn" class="btn">反映</button>
-        </div>
-        <div class="fields-grid">
-          <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="mn_width" /></label>
-          <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="mn_aspect" /></label>
-          <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="mn_inch" /></label>
-          <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="mn_j" /></label>
-          <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="mn_et" /></label>
-          <label class="field"><span>規定圧(kPa)</span><input type="text" inputmode="decimal" id="mn_kpa" /></label>
-          <label class="field"><span>純正LI</span><input type="text" inputmode="decimal" id="mn_li" /></label>
-          <label class="field check-box">
-            <span>規格</span>
-            <label class="inline-check"><input type="checkbox" id="mn_xl" /> XL</label>
-          </label>
-        </div>
-      </div>
-
-      <!-- 純正最大・車体余裕（外側/フェンダー限界） -->
-      <div class="input-card card-max">
-        <div class="card-header">
-          <span class="card-tag tag-max">純正最大・車体枠 (外側/ハウス)</span>
-          <span class="card-spec" id="maxSummary">--</span>
-        </div>
-        <div class="quick-row">
-          <input type="text" id="maxQuick" placeholder="例: 165/55R15 4.5J +45" />
-          <button id="maxQuickBtn" class="btn">反映</button>
-        </div>
-        <div class="fields-grid">
-          <label class="field"><span>タイヤ幅</span><input type="text" inputmode="decimal" id="mx_width" /></label>
-          <label class="field"><span>扁平率(%)</span><input type="text" inputmode="decimal" id="mx_aspect" /></label>
-          <label class="field"><span>インチ</span><input type="text" inputmode="decimal" id="mx_inch" /></label>
-          <label class="field"><span>J数</span><input type="text" inputmode="decimal" id="mx_j" /></label>
-          <label class="field"><span>インセット</span><input type="text" inputmode="decimal" id="mx_et" /></label>
-          <label class="field"><span>フェンダー余裕</span><input type="text" inputmode="decimal" id="mx_margin" /></label>
-          <label class="field col-span-2">
-            <span>車両メーカー (ハブ/ナット確認)</span>
-            <select id="makerSelect">
-              <option value="generic">汎用 (ハブ/座面要確認)</option>
-              <option value="toyota">トヨタ / レクサス (54・60mm / 平座多)</option>
-              <option value="honda">ホンダ (56・64mm / 球面12R多)</option>
-              <option value="nissan">日産 (66mm / テーパー)</option>
-              <option value="mazda">マツダ (67mm / テーパー)</option>
-              <option value="subaru">スバル (56mm / テーパー)</option>
-              <option value="kei_suzuki_daihatsu">軽: スズキ/ダイハツ (54mm / テーパー)</option>
-              <option value="kei_mitsubishi_nissan">軽: 三菱/日産 (56mm / テーパー)</option>
-            </select>
           </label>
         </div>
       </div>
     </section>
 
-    <!-- ②〜⑦ エビデンス詳細エリア -->
+    <!-- エビデンス詳細エリア -->
     <section class="evidence-layout">
-      <!-- 左：視覚図解（正面上半分断面 + 寸法矢印 + 外径ゲージ） -->
       <div class="panel diagram-panel">
         <div class="panel-head">
-          <h2>断面比較エビデンス図（上半分拡大・寸法表示）</h2>
+          <h2>2D断面比較（上半分拡大・寸法表示）</h2>
           <div class="legend-mini">
-            <span class="lg-item"><i class="sw sw-base"></i>純正基準</span>
-            <span class="lg-item"><i class="sw sw-max"></i>フェンダー限界</span>
-            <span class="lg-item"><i class="sw sw-target"></i>検討中</span>
+            <span class="lg-item"><i class="sw sw-base"></i>現在のサイズ</span>
+            <span class="lg-item"><i class="sw sw-target"></i>検討サイズ</span>
           </div>
         </div>
         <div class="canvas-wrap">
@@ -178,7 +97,6 @@
         <div class="meter-bar-box" id="diameterGaugeBox"></div>
       </div>
 
-      <!-- 右：4つの法的・物理エビデンスカード + 安価代替サイズ提案 -->
       <div class="evidence-cards">
         <div class="ev-card" id="evDiameter">
           <div class="ev-head">
@@ -190,7 +108,7 @@
 
         <div class="ev-card" id="evLoad">
           <div class="ev-head">
-            <span>2. ロードインデックス (耐荷重)・空気圧</span>
+            <span>2. ロードインデックス (耐荷重)・必要空気圧</span>
             <span class="ev-pill" id="pillLoad">--</span>
           </div>
           <div class="ev-body" id="bodyLoad"></div>
@@ -206,36 +124,22 @@
 
         <div class="ev-card" id="evClearance">
           <div class="ev-head">
-            <span>4. ブレーキ内側・フェンダー外側クリアランス</span>
+            <span>4. 基準比クリアランス (外側出面 / 内側・ブレーキ)</span>
             <span class="ev-pill" id="pillClearance">--</span>
           </div>
           <div class="ev-body" id="bodyClearance"></div>
         </div>
 
-        <div class="ev-card ev-physical" id="evPhysical">
-          <div class="ev-head">
-            <span>5. 車種別あるある・現場トラップ＆ハブ/ナット判定</span>
-            <span class="ev-pill" id="pillPhysical">--</span>
-          </div>
-          <div class="spec-pills" id="physicalSpecs"></div>
-          <div class="ev-body" id="bodyPhysical"></div>
-          <ul class="trap-list" id="carTrapList"></ul>
-          <div class="aruaru-dict">
-            <input type="text" id="aruaruSearch" placeholder="全30車系あるある辞書を検索 (例: 60プリウス, M14, P1.25, ハイエース)..." />
-            <div class="aruaru-results" id="aruaruResults"></div>
-          </div>
-        </div>
-
         <div class="ev-card ev-alt">
           <div class="ev-head">
-            <span>6. 流通量が多く安い定番代替サイズ候補 (クリックで反映)</span>
+            <span>安価な定番代替サイズ候補 (クリックで検討に反映)</span>
           </div>
           <div class="alt-list" id="altList"></div>
         </div>
 
         <div class="ev-card ev-shop" id="affiliateBox">
           <div class="ev-head">
-            <span>7. 適合タイヤ・必要副資材の価格比較検索</span>
+            <span>検討サイズ・パーツの価格比較検索</span>
           </div>
           <div class="shop-rows" id="shopRows"></div>
         </div>
@@ -243,56 +147,7 @@
     </section>
   </main>
 
-  <!-- 右下フローティング再表示ボタン -->
-  <button id="reopenAlertBtn" class="floating-alert-btn" type="button">
-    <span>⚠️ 警告・車種トラップを見る</span>
-    <span id="alertCountBadge" class="alert-count-badge">0</span>
-  </button>
-
-  <!-- 適合NG・車種トラップ ポップアップアラート -->
-  <div id="alertModal" class="modal-overlay" hidden aria-modal="true" role="dialog">
-    <div class="modal-dialog" id="alertDialog">
-      <div class="modal-header" id="modalHeader">
-        <div class="modal-title-wrap">
-          <span class="modal-badge" id="modalBadge">--</span>
-          <h3 id="modalTitle">適合・現場トラップアラート</h3>
-        </div>
-        <button id="modalCloseTopBtn" class="modal-close-x" type="button" aria-label="閉じる">×</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="modal-talk" id="modalTalk"></div>
-
-        <div class="modal-section" id="modalFindingsSection">
-          <div class="modal-sec-title">🚨 今回の判定エビデンス（NG / 要確認項目）</div>
-          <ul class="modal-list" id="modalFindingsList"></ul>
-        </div>
-
-        <div class="modal-section modal-traps-sec">
-          <div class="modal-sec-title" id="modalTrapsTitle">⚠️ この車種の「現場あるある・固有トラップ」</div>
-          <ul class="modal-list" id="modalTrapsList"></ul>
-        </div>
-
-        <div class="modal-section modal-alt-sec" id="modalAltsWrap" hidden>
-          <div class="modal-sec-title">💡 代わりに安く適合しやすい定番代替サイズ（タップで即反映）</div>
-          <div class="alt-list" id="modalAltsList"></div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <label class="auto-pop-label">
-          <input type="checkbox" id="autoPopupToggle" checked />
-          <span>自動ポップアップ ON</span>
-        </label>
-        <div class="modal-footer-btns">
-          <button id="modalSavePngBtn" class="btn" type="button">診断画像(PNG)保存</button>
-          <button id="modalCloseBtn" class="btn btn-primary" type="button">確認して閉じる</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div id="toast" class="toast">URLをコピーしました</div>
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=5"></script>
 </body>
 </html>
