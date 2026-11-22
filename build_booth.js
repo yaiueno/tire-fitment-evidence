@@ -15,14 +15,17 @@ const html = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(rootDir, 'style.css'), 'utf8');
 const js = fs.readFileSync(path.join(rootDir, 'app.js'), 'utf8');
 
+// Strip online BOOTH promo button from purchased offline package editions
+const boothHtml = html.replace(/[ \t]*<a\s+[^>]*id="boothPromoLink"[^>]*>[\s\S]*?<\/a>\r?\n?/gi, '');
+
 // Web edition
-fs.writeFileSync(path.join(webDir, 'index.html'), html, 'utf8');
+fs.writeFileSync(path.join(webDir, 'index.html'), boothHtml, 'utf8');
 fs.writeFileSync(path.join(webDir, 'style.css'), css, 'utf8');
 fs.writeFileSync(path.join(webDir, 'app.js'), js, 'utf8');
 
 // Single-file offline HTML edition (uses function replacers so $ patterns in JS/CSS are preserved verbatim)
 const safeJs = js.replace(/<\/script>/gi, '<\\/script>');
-let standaloneHtml = html.replace(
+let standaloneHtml = boothHtml.replace(
   /<link\s+rel="stylesheet"\s+href="style\.css[^"]*"\s*\/?>/i,
   () => `<style>\n${css}\n  </style>`
 );
