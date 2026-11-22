@@ -1,34 +1,35 @@
 const INCH_MM = 25.4;
 
-// 公式ツール（楽天「URLからリンクを作成」/ もしも「どこでもリンク」等）で事前生成した無改変リンク辞書
-// 規約順守のため、URLをJSで動的改変せず登録済みの公式リンクをそのまま使用する（未登録時は通常検索URLへフォールバック）
+// 公式ツール（楽天「URLからリンクを作成(テキストのみ)」の<a>HTML全文 / もしも「どこでもリンク」・VC「MyLink」のURL）辞書
+// 規約順守のため、生成されたHTML/URLを一字一句改変せずにそのまま使用する（未登録時は通常検索URLへフォールバック）
 const STATIC_AFFILIATE_MAP = {
-  '155/65R14': { rakuten: '', amazon: '', yahoo: '' },
-  '165/55R15': { rakuten: '', amazon: '', yahoo: '' },
-  '165/65R14': { rakuten: '', amazon: '', yahoo: '' },
-  '175/65R14': { rakuten: '', amazon: '', yahoo: '' },
-  '175/65R15': { rakuten: '', amazon: '', yahoo: '' },
-  '185/60R15': { rakuten: '', amazon: '', yahoo: '' },
-  '185/65R15': { rakuten: '', amazon: '', yahoo: '' },
-  '195/65R15': { rakuten: '', amazon: '', yahoo: '' },
-  '195/60R16': { rakuten: '', amazon: '', yahoo: '' },
-  '205/55R16': { rakuten: '', amazon: '', yahoo: '' },
-  '205/60R16': { rakuten: '', amazon: '', yahoo: '' },
-  '215/45R17': { rakuten: '', amazon: '', yahoo: '' },
-  '215/50R17': { rakuten: '', amazon: '', yahoo: '' },
-  '215/55R17': { rakuten: '', amazon: '', yahoo: '' },
-  '215/60R16': { rakuten: '', amazon: '', yahoo: '' },
-  '225/40R18': { rakuten: '', amazon: '', yahoo: '' },
-  '225/45R18': { rakuten: '', amazon: '', yahoo: '' },
-  '225/65R17': { rakuten: '', amazon: '', yahoo: '' },
-  nut_taper: { rakuten: '', amazon: '', yahoo: '' },
-  spacer: { rakuten: '', amazon: '', yahoo: '' }
+  '155/65R14': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '165/55R15': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '165/65R14': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '175/65R14': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '175/65R15': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '185/60R15': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '185/65R15': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '195/65R15': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '195/60R16': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '205/55R16': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '205/60R16': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '215/45R17': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '215/50R17': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '215/55R17': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '215/60R16': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '225/40R18': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '225/45R18': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  '225/65R17': { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  nut_taper: { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' },
+  spacer: { rakutenHtml: '', rakuten: '', amazon: '', yahoo: '' }
 };
 
 function buildShopUrls(keyword, mapKey = '') {
   const q = encodeURIComponent(keyword);
   const entry = (mapKey && STATIC_AFFILIATE_MAP[mapKey]) || {};
   return {
+    rakutenHtml: entry.rakutenHtml || '',
     rakuten: entry.rakuten || `https://search.rakuten.co.jp/search/mall/${q}/`,
     amazon: entry.amazon || `https://www.amazon.co.jp/s?k=${q}`,
     yahoo: entry.yahoo || `https://shopping.yahoo.co.jp/search?p=${q}`
@@ -619,11 +620,14 @@ function renderAffiliateLinks(ev) {
 
   document.getElementById('shopRows').innerHTML = items.map(it => {
     const urls = buildShopUrls(it.query, it.key);
+    const rakutenPart = urls.rakutenHtml
+      ? `<span class="shop-link-wrap rakuten-raw">${urls.rakutenHtml}</span>`
+      : `<a class="shop-link rakuten" href="${urls.rakuten}" target="_blank" rel="noopener">楽天市場</a>`;
     return `
       <div class="shop-row">
         <span class="shop-label">${it.label}</span>
         <div class="shop-links">
-          <a class="shop-link rakuten" href="${urls.rakuten}" target="_blank" rel="noopener">楽天市場</a>
+          ${rakutenPart}
           <a class="shop-link amazon" href="${urls.amazon}" target="_blank" rel="noopener">Amazon</a>
           <a class="shop-link yahoo" href="${urls.yahoo}" target="_blank" rel="noopener">Yahoo!</a>
         </div>

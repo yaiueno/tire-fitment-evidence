@@ -666,6 +666,37 @@ body[data-mode="wheel"] .fields-grid-6 {
 .shop-link.amazon { color: #b45309; border-color: rgba(180, 83, 9, 0.3); }
 .shop-link.yahoo { color: #be123c; border-color: rgba(190, 18, 60, 0.3); }
 
+.pr-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.pr-notice {
+  margin: 0 0 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.shop-link-wrap.rakuten-raw a {
+  display: inline-block;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(191, 0, 0, 0.3);
+  background: var(--surface);
+  color: #bf0000;
+}
+
+.shop-link-wrap.rakuten-raw a:hover {
+  border-color: var(--ink);
+}
+
 .toast {
   position: fixed;
   bottom: 20px;
